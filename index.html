@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0b0d12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pecados">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>Os Pecados da Forca — Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#e8e2c8;--gold:#f0d060;--stone:#2a3340;--stone2:#3d4a5a;--edge:#7d8ea0;--dark:#0b0d12}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%;background:#000;overflow:hidden;touch-action:manipulation}
+body{font-family:'VT323',monospace;color:var(--ink)}
+#stage{position:absolute;left:0;top:0;transform-origin:0 0;background:var(--dark);image-rendering:pixelated}
+#stage.side{width:1324px;height:687px}
+#stage.bottom{width:1024px;height:907px}
+#scene{position:absolute;left:0;top:0;width:1024px;height:687px;overflow:hidden;background:#000}
+#bg{position:absolute;inset:0;width:1024px;height:687px;image-rendering:pixelated}
+#sprites,#hots{position:absolute;inset:0}
+#sprites{pointer-events:none}
+.spr{position:absolute;transform-origin:50% 100%;image-rendering:pixelated;pointer-events:none;filter:drop-shadow(0 6px 4px rgba(0,0,0,.55))}
+.spr.npc{pointer-events:auto;cursor:pointer}
+.spr.idle{animation:breathe 3.2s ease-in-out infinite}
+@keyframes breathe{50%{scale:1 1.018}}
+.spr.walking{animation:walk .42s ease-in-out infinite}
+@keyframes walk{0%,100%{margin-top:0;rotate:-1.6deg}50%{margin-top:-6px;rotate:1.6deg}}
+.spr.dogwalk{animation:dogwalk .22s steps(2) infinite}
+@keyframes dogwalk{50%{margin-top:-3px}}
+.spr.talk{animation:talk .5s ease-in-out 2}
+@keyframes talk{50%{margin-top:-5px}}
+.hs.drop,.spr.drop,.slot.drop{outline:3px solid var(--gold);background:rgba(240,208,96,.18)}
+#ghost{position:fixed;width:64px;height:64px;pointer-events:none;z-index:99;display:none;transform:translate(-50%,-60%);filter:drop-shadow(0 4px 6px #000);image-rendering:pixelated}
+.slot{touch-action:none}
+.gman{position:absolute;transform-origin:50% 100%;filter:drop-shadow(0 6px 4px rgba(0,0,0,.55));pointer-events:none}
+.gman img{position:absolute;image-rendering:pixelated}
+.gman .gst{position:absolute;left:0;bottom:0;width:100%;height:100%}
+.gman .gwk{position:absolute;left:50%;bottom:0;height:100%;display:none}
+.gman.walking .gst{display:none}.gman.walking .gwk{display:block}
+.spr.gman.walking{animation:none}
+.hs{position:absolute;cursor:pointer}
+.hs.flash{outline:3px dashed var(--gold);background:rgba(240,208,96,.15)}
+.spr.flash{outline:3px dashed var(--gold)}
+.exit{position:absolute;font-family:'Press Start 2P';font-size:15px;color:var(--gold);text-shadow:2px 2px 0 #000;display:flex;align-items:flex-end;justify-content:flex-start;padding:10px;pointer-events:none}
+#dark{position:absolute;inset:0;pointer-events:none;display:none}
+#rain{position:absolute;inset:0;pointer-events:none;display:none;opacity:.22;
+ background-image:repeating-linear-gradient(105deg,transparent 0 22px,rgba(200,220,255,.7) 22px 23px,transparent 23px 47px);
+ background-size:200px 200px;animation:rain .35s linear infinite}
+@keyframes rain{to{background-position:-40px 200px}}
+#scene.lowsan #bg{animation:sway 4s ease-in-out infinite}
+#scene.lowsan::after{content:'';position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 160px rgba(120,0,0,.65)}
+@keyframes sway{0%,100%{filter:var(--f) hue-rotate(0deg)}50%{filter:var(--f) hue-rotate(-25deg) contrast(1.2);transform:translateX(3px) scale(1.01)}}
+#hud{position:absolute;right:14px;top:12px;font-family:'Press Start 2P';font-size:11px;pointer-events:none;text-shadow:2px 2px 0 #000}
+.meter{display:flex;align-items:center;gap:8px;margin-bottom:8px;justify-content:flex-end}
+.segs{display:flex;gap:2px;padding:3px;background:rgba(0,0,0,.6);border:2px solid var(--edge)}
+.seg{width:11px;height:12px}
+.seg.v{background:#d52a2a}.seg.s{background:#3a8ee6}.seg.off{background:#2a2a2a}
+#pistas{pointer-events:auto;cursor:pointer;text-decoration:underline}
+#hudl{position:absolute;left:14px;top:12px;font-family:'Press Start 2P';font-size:12px;pointer-events:none;text-shadow:2px 2px 0 #000;line-height:1.9}
+#hudl img{height:22px;vertical-align:middle;margin-right:6px}
+#timer{color:#ff8a5a;display:none}
+#sentence{position:absolute;left:0;right:0;bottom:8px;text-align:center;font-family:'Press Start 2P';font-size:14px;color:var(--gold);text-shadow:2px 2px 0 #000,-1px -1px 0 #000;pointer-events:none}
+#toast{position:absolute;left:50%;top:120px;transform:translateX(-50%);font-family:'Press Start 2P';font-size:14px;color:#fff;background:rgba(0,0,0,.8);border:3px solid var(--gold);padding:12px 18px;display:none;pointer-events:none;white-space:nowrap;z-index:17}
+#dlg{position:absolute;left:60px;right:60px;top:70px;min-height:150px;display:none;background:#0d0f14;border:6px solid var(--stone2);outline:3px solid #11161d;box-shadow:inset 0 0 0 3px #11161d,0 8px 30px rgba(0,0,0,.7);padding:14px;gap:16px;cursor:pointer;z-index:16}
+#dlg.on{display:flex}
+#dlg.narr{background:rgba(5,6,9,.92)}
+#por{width:120px;height:120px;flex:none;border:4px solid var(--stone2);background:#000 center/cover;image-rendering:pixelated}
+#por.none{display:none}
+#dtext{flex:1;font-size:31px;line-height:1.08}
+#dname{font-family:'Press Start 2P';font-size:13px;color:var(--gold);margin-bottom:8px}
+#dlg.narr #dtext{font-style:italic;color:#cfd6e0}
+#dmore{position:absolute;right:12px;bottom:6px;font-family:'Press Start 2P';font-size:12px;color:var(--gold);animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+#whisper{position:absolute;font-size:34px;color:rgba(200,30,30,.85);pointer-events:none;text-shadow:0 0 8px #000;opacity:0;transition:opacity .6s}
+#panel{position:absolute;background:linear-gradient(#2c3643,#1d242e);border:5px solid var(--stone2);box-shadow:inset 0 0 0 3px #10151c;display:flex;padding:12px;gap:12px}
+#stage.side #panel{left:1024px;top:0;width:300px;height:687px;flex-direction:column}
+#stage.bottom #panel{left:0;top:687px;width:1024px;height:220px;flex-direction:row}
+#verbs{display:grid;gap:8px}
+#stage.side #verbs{grid-template-columns:1fr 1fr}
+#stage.bottom #verbs{grid-template-columns:repeat(3,150px);align-content:start}
+.btn{font-family:'Press Start 2P';font-size:14px;color:var(--ink);background:linear-gradient(#56687b,#3a4757);border:3px solid #8fa1b3;border-bottom-color:#26303b;border-right-color:#26303b;padding:13px 6px;text-align:center;cursor:pointer;text-shadow:2px 2px 0 #1a2129}
+.btn:active{transform:translateY(2px)}
+.btn.sel{color:var(--gold);background:linear-gradient(#6a7f94,#46566a);outline:3px solid var(--gold)}
+.btn.small{font-size:11px;padding:10px 6px}
+#inv{background:#0c0f14;border:4px solid var(--stone2);padding:8px;display:grid;gap:6px;position:relative}
+#inv h4{position:absolute;top:-2px;left:0;right:0;margin:0;text-align:center;font-family:'Press Start 2P';font-size:11px;color:var(--ink);transform:translateY(-120%)}
+#stage.side #inv{grid-template-columns:repeat(3,1fr);margin-top:26px}
+#stage.bottom #inv{grid-template-columns:repeat(5,72px);grid-auto-rows:72px;margin-left:auto;margin-top:22px}
+.slot{background:#1e1f24;border:2px solid #2c333d;aspect-ratio:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:4px}
+.slot img{max-width:100%;max-height:100%;image-rendering:pixelated}
+.slot.sel{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+#tools{display:flex;gap:8px}
+#stage.side #tools{margin-top:auto}
+#stage.bottom #tools{flex-direction:column;width:130px}
+#tools .btn{flex:1;font-size:8px;padding:10px 1px}
+#ov{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;flex-direction:column;background:#000;text-align:center}
+#ov.on{display:flex}
+#ov .title{font-family:'Press Start 2P';font-size:44px;color:#d9c48a;text-shadow:4px 4px 0 #3a0a0a,0 0 24px rgba(200,40,40,.5);line-height:1.3}
+#ov .sub{font-size:34px;color:#b8c2cc;margin:14px 0 30px}
+#ov .btn{min-width:330px;margin:7px;font-size:16px}
+#ov p{font-size:32px;max-width:820px;line-height:1.15;margin:8px 0}
+#ovbg{position:absolute;inset:0;background:center/cover;opacity:.35;image-rendering:pixelated}
+#ov > *:not(#ovbg){position:relative}
+#fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .35s;z-index:15}
+#rot{display:none;position:fixed;inset:0;background:#000;color:var(--ink);z-index:50;align-items:center;justify-content:center;text-align:center;font-family:'Press Start 2P';font-size:14px;line-height:2;padding:30px}
+</style>
+</head>
+<body>
+<div id="stage" class="side">
+  <div id="scene">
+    <img id="bg" alt="">
+    <img id="raio" alt="" style="position:absolute;left:580px;top:100px;display:none;pointer-events:none;image-rendering:pixelated">
+    <div id="hots"></div>
+    <div id="sprites"></div>
+    <div id="rain"></div>
+    <div id="flashw" style="position:absolute;inset:0;background:#dfe8ff;opacity:0;pointer-events:none;mix-blend-mode:screen"></div>
+    <div id="dark"></div>
+    <div id="hudl"><div id="money"></div><div id="pistas"></div><div id="timer"></div></div>
+    <div id="hud">
+      <div class="meter">VIDA <div class="segs" id="mv"></div></div>
+      <div class="meter">SANIDADE <div class="segs" id="ms"></div></div>
+    </div>
+    <div id="whisper"></div>
+    <div id="sentence"></div>
+    <div id="toast"></div>
+    <div id="dlg"><div id="por"></div><div id="dtext"><div id="dname"></div><div id="dline"></div></div><div id="dmore">▼</div></div>
+    <div id="fade"></div>
+  </div>
+  <div id="panel">
+    <div id="verbs"></div>
+    <div id="inv"><h4>INVENTÁRIO</h4></div>
+    <div id="tools">
+      <div class="btn small" id="bhome">INÍCIO</div>
+      <div class="btn small" id="bmap">TÁXI</div>
+      <div class="btn small" id="bhint">DICA</div>
+      <div class="btn small" id="bsnd">SOM</div>
+      <div class="btn small" id="bfs">TELA</div>
+    </div>
+  </div>
+  <div id="ov"><div id="ovbg"></div><div id="ovc"></div></div>
+</div>
+<img id="ghost" alt="">
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const IMG=n=>n+'.webp';
+
+/* ---------------- ÁUDIO ---------------- */
+const SNDS=['batidas','latido','rosnado','telefone','pegar','pista','susto','dano','passos-madeira','passos-rua','porta','degrau','isqueiro','cafe','taxi','chuva','chuva-dentro','porao','delegacia','capela','sino','sussurros','musica','portao','redacao','praia','casa-vo','bau'];
+const SFX={ctx:null,on:true,buf:{},master:null,ambSrc:null,ambName:null,stepSrc:null,
+  init(){if(this.ctx)return;try{this.ctx=new (window.AudioContext||window.webkitAudioContext)();this.master=this.ctx.createGain();this.master.connect(this.ctx.destination);
+    SNDS.forEach(n=>fetch(n+'.mp3').then(r=>r.arrayBuffer()).then(ab=>new Promise((ok,no)=>this.ctx.decodeAudioData(ab,ok,no))).then(bf=>{this.buf[n]=bf;if(this.wantAmb===n)this.amb(n,true)}).catch(()=>{}))}catch(e){}},
+  mute(){this.on=!this.on;if(this.master)this.master.gain.setTargetAtTime(this.on?1:0,this.ctx.currentTime,.05)},
+  play(n,v=1,loop=false){if(!this.ctx||!this.buf[n])return null;const c=this.ctx,s=c.createBufferSource(),g=c.createGain();s.buffer=this.buf[n];s.loop=loop;g.gain.value=v;s.connect(g).connect(this.master);s.start();s._g=g;return s},
+  fadeOut(s,t=.8){if(!s)return;try{s._g.gain.setTargetAtTime(0,this.ctx.currentTime,t/4);s.stop(this.ctx.currentTime+t)}catch(e){}},
+  amb(n,force){this.wantAmb=n;if(!this.ctx||(!force&&this.ambName===n))return;if(!this.buf[n])return;this.fadeOut(this.ambSrc,1.2);const s=this.play(n,0,true);if(!s)return;s._g.gain.setTargetAtTime(.45,this.ctx.currentTime,.4);this.ambSrc=s;this.ambName=n},
+  steps(on,rua){if(on){if(this.stepSrc)return;this.stepSrc=this.play(rua?'passos-rua':'passos-madeira',.55,true)}else{this.fadeOut(this.stepSrc,.15);this.stepSrc=null}},
+  tone(f,d,type='sine',v=.2,t0=0,slide=0){if(!this.ctx)return;const c=this.ctx,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f,c.currentTime+t0);if(slide)o.frequency.exponentialRampToValueAtTime(slide,c.currentTime+t0+d);g.gain.setValueAtTime(v,c.currentTime+t0);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+t0+d);o.connect(g).connect(this.master);o.start(c.currentTime+t0);o.stop(c.currentTime+t0+d+.05)},
+  knock(){this.play('batidas')||this.tone(90,.18,'sine',.9,0,45)},
+  bark(){this.play('latido',.8)||this.tone(520,.12,'sawtooth',.18,0,260)},
+  growl(){this.play('rosnado',.8)},
+  ring(){this.play('telefone',.7)||this.tone(440,.5,'square',.08)},
+  pick(){this.play('pegar',.8)||this.tone(660,.08,'square',.12)},
+  clue(){this.play('pista',.8)||this.tone(523,.25,'triangle',.18)},
+  sting(){this.play('susto',.8)||this.tone(70,1.6,'sawtooth',.25,0,40)},
+  hurt(){this.play('dano',.9)||this.tone(180,.4,'square',.22,0,60)},
+  fx(n,v=.9){this.play(n,v)},
+  bell(){this.play('sino',.9)||this.tone(392,2.5,'sine',.2)},
+  musica(on){if(on){this.amb('musica')}}
+};
+
+/* ---------------- DADOS ---------------- */
+const ITEMS={
+  petisco:{n:'Petisco',d:'Biscoito de cachorro. Moeda forte com o Nori.'},
+  nota:{n:'Nota fiscal',d:'Venda do Crônicas do Largo da Forca para Otávio Lins. No verso, a lápis: "Capela dos Aflitos, 3 batidas".'},
+  vela:{n:'Vela',d:'Vela branca da Capela dos Aflitos. Apagada.'},
+  bilhete:{n:'Bilhete antigo',d:'Papel amarelado: "O último Medeiros paga a corda. 20/9". A letra parece a do vô José Marcelino.'},
+  isqueiro:{n:'Isqueiro',d:'Zippo do Ayrton. Peguei emprestado. Pra sempre.'},
+  recorte:{n:'Recorte de 1954',d:'Notícias Populares, 21/9/1954: "Antônio Medeiros achado enforcado. Três nós a carvão ao lado do corpo." O irmão do vô José Marcelino.'},
+  corda:{n:'Pedaço de corda',d:'Cânhamo velho, duro como osso. Tem mais de 150 anos.'},
+  velaacesa:{n:'Vela acesa',d:'A chama não treme nem com o vento. Isso não é normal.'}
+};
+const ICON={petisco:'i_petisco',nota:'i_nota',vela:'i_vela',bilhete:'i_bilhete',isqueiro:'i_isqueiro',velaacesa:'i_velaacesa',recorte:'i_nota',corda:'i_corda'};
+const PERS={guilherme:'Guilherme',nathalia:'Nathalia',pedro:'Pedro',sarah:'Sarah',helena:'Helena',marlene:'Dona Marlene',plantonista:'Ayrton',izabel:'Vó Maria Izabel',valdir:'Seu Valdir'};
+const PISTAS=13;
+const LOCS={sebo:'Sebo Medeiros',capelafora:'Capela dos Aflitos',delegacia:'1º DP',redacao:'Redação do NP',casafora:'Praia Grande'};
+
+let S=null; // estado
+function novo(){return{scene:'abertura',gx:null,flags:{},inv:[],vida:10,san:10,cr:10000,pistas:[],cp:null}}
+function salvar(){try{localStorage.setItem('pecados_v1',JSON.stringify(S))}catch(e){}}
+function carregar(){try{const j=localStorage.getItem('pecados_v1');return j?JSON.parse(j):null}catch(e){return null}}
+
+/* ---------------- LAYOUT ---------------- */
+let rotated=false;
+function fit(){
+  const vw=innerWidth,vh=innerHeight,st=$('#stage');
+  rotated=vh>vw*1.05;st.className='side';
+  if(rotated){const k=Math.min(vh/1324,vw/687);const ox=(vw-687*k)/2,oy=(vh-1324*k)/2;st.style.transform=`translate(${ox+687*k}px,${oy}px) rotate(90deg) scale(${k})`}
+  else{const k=Math.min(vw/1324,vh/687);st.style.transform=`translate(${(vw-1324*k)/2}px,${(vh-687*k)/2}px) scale(${k})`}
+}
+function toStage(x,y){const m=new DOMMatrix(getComputedStyle($('#stage')).transform);return m.inverse().transformPoint(new DOMPoint(x,y))}
+function telaCheia(){try{const el=document.documentElement;const rq=el.requestFullscreen||el.webkitRequestFullscreen;if(rq&&!document.fullscreenElement){const p=rq.call(el,{navigationUI:'hide'});if(p&&p.then)p.then(()=>{try{screen.orientation.lock('landscape').catch(()=>{})}catch(e){}}).catch(()=>{})}}catch(e){}}
+addEventListener('resize',()=>{fit();if(S&&S.scene){drawInv()}});
+document.addEventListener('pointerdown',()=>{if(!SFX.ctx){SFX.init();SFX.amb(SFX.wantAmb||'musica')}if(SFX.ctx&&SFX.ctx.state==='suspended')SFX.ctx.resume()});
+
+/* ---------------- UI ---------------- */
+const VERBS=[['andar','ANDAR'],['olhar','OLHAR'],['pegar','PEGAR'],['falar','FALAR'],['usar','USAR']];
+let verb='andar',selItem=null,busy=false;
+function drawVerbs(){const v=$('#verbs');v.innerHTML='';VERBS.forEach(([k,l])=>{const b=document.createElement('div');b.className='btn'+(verb===k?' sel':'');b.textContent=l;b.onclick=()=>{if(busy)return;verb=k;selItem=null;drawVerbs();drawInv();sentence()};v.appendChild(b)})}
+function drawInv(){const v=$('#inv');v.querySelectorAll('.slot').forEach(e=>e.remove());const n=$('#stage').classList.contains('side')?9:10;
+  for(let i=0;i<n;i++){const s=document.createElement('div');s.className='slot';const it=S.inv[i];if(it){const im=new Image();im.src=IMG(ICON[it]);s.appendChild(im);if(selItem===it)s.classList.add('sel');s._item=it;s.onpointerdown=e=>startDrag(e,it,s)}v.appendChild(s)}}
+function drawHud(){const seg=(el,n,c)=>{el.innerHTML='';for(let i=0;i<10;i++){const d=document.createElement('div');d.className='seg '+(i<n?c:'off');el.appendChild(d)}};
+  seg($('#mv'),S.vida,'v');seg($('#ms'),S.san,'s');
+  $('#money').innerHTML=`<img src="${IMG('i_dinheiro')}">CR$ ${S.cr.toLocaleString('pt-BR')}`;
+  $('#pistas').textContent=`PISTAS ${S.pistas.length}/${PISTAS} (VER)`;
+  $('#scene').classList.toggle('lowsan',S.san<=4);
+  const t=$('#timer');if(S.scene==='delegacia'&&S.flags.distr>0){t.style.display='block';t.textContent=`AYRTON VOLTA EM ${S.flags.distr}`}else t.style.display='none';
+}
+function sentence(hs){const v=VERBS.find(x=>x[0]===verb)[1];let t=v;if(selItem)t+=' '+ITEMS[selItem].n.toUpperCase()+' COM';if(hs)t+=' '+hs.toUpperCase();$('#sentence').textContent=(verb==='andar'&&!hs)?'':t}
+function toast(t,ms=1800){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',ms)}
+
+/* diálogo */
+let dlgResolve=null;
+function passarFala(e){if(!dlgResolve)return;if(e){e.stopPropagation();e.preventDefault()}const r=dlgResolve;dlgResolve=null;$('#dlg').classList.remove('on');r()}
+document.addEventListener('click',e=>{if(dlgResolve&&!$('#ov').classList.contains('on'))passarFala(e)},true);
+let dq=Promise.resolve();
+function say(who,txt){dq=dq.then(()=>show(who,txt));return dq}
+function show(who,txt){let held=null;if(who){anim(who);const el=document.querySelector(`.spr[data-id="${who}"]`);if(el&&el._anim){held=el;el._hold=ANIMS[el._anim].talk;el.src=IMG(el._hold)}}
+  return new Promise(r0=>{const res=()=>{if(held)held._hold=null;r0()};const d=$('#dlg');d.classList.toggle('narr',!who);const p=$('#por');
+  if(who&&['guilherme','nathalia','pedro','sarah','helena','marlene','plantonista','izabel'].includes(who)){p.className='';p.style.backgroundImage=`url(${IMG('p_'+who)})`}else p.className='none';
+  $('#dname').textContent=who?PERS[who]:'';$('#dname').style.display=who?'block':'none';$('#dline').textContent=who?'"'+txt+'"':txt;d.classList.add('on');dlgResolve=res})}
+const narr=t=>say(null,t);
+const G=t=>say('guilherme',t);
+
+/* estado/efeitos */
+function give(it){if(!S.inv.includes(it))S.inv.push(it);SFX.pick();toast('PEGOU: '+ITEMS[it].n.toUpperCase());drawInv()}
+function take(it){S.inv=S.inv.filter(x=>x!==it);if(selItem===it)selItem=null;drawInv()}
+const has=it=>S.inv.includes(it);
+async function pista(n,txt){if(S.pistas.includes(n))return;S.pistas.push(n);SFX.clue();drawHud();toast(`PISTA ${S.pistas.length}/${PISTAS}`,2200);if(txt)await narr('Pista: '+txt)}
+async function hurt(n,txt){S.vida=Math.max(0,S.vida-n);SFX.hurt();flashRed();drawHud();if(txt)await narr(txt+` (−${n} vida)`);if(S.vida<=0)throw 'morte'}
+async function scare(n,txt){S.san=Math.max(0,S.san-n);SFX.sting();flashRed();drawHud();if(txt)await narr(txt+` (−${n} sanidade)`);if(S.san<=0)throw 'loucura'}
+function flashRed(){const f=$('#fade');f.style.background='#600';f.style.opacity=.5;setTimeout(()=>{f.style.opacity=0;setTimeout(()=>f.style.background='#000',350)},120)}
+
+/* ---------------- CENAS ---------------- */
+// rects em px na imagem 1024x687
+const SC={};
+SC.abertura={img:'sebo',f:'brightness(.62) saturate(.8)',base:687,gh:390,range:[150,860],start:230,rain:.08,
+  sprites:()=>S.flags.sarahIn?[{id:'sarah',img:'sarah',x:700,y:687,h:395,flip:1}]:[],
+  hots:[
+    {l:'Porta da frente',r:[150,115,320,265],x:330,any:async()=>{await abrirSarah()},olhar:'A porta da frente fica ao lado da vitrine. Alguém bateu três vezes. À meia-noite.'},
+    {l:'Máquina de escrever',r:[135,400,75,50],olhar:'Página 213 do meu romance. Faz três semanas que ela não sai do lugar.',pegar:'Pesada demais. E eu nem estou escrevendo.'},
+    {l:'Porta do porão',r:[895,265,129,390],olhar:'O porão. Desde que o vô José Marcelino morreu, ninguém desce lá.',andar:'Agora não. Tem alguém na porta da frente.',usar:'Agora não. Tem alguém na porta da frente.'}
+  ],
+  npc:{sarah:{l:'Sarah',olhar:'Investigadora Sarah. Não sorri desde 1989, pelo jeito.',falar:'Ela está esperando a minha resposta.'}},
+  async enter(){if(!S.flags.intro){S.flags.intro=1;await narr('Centro de São Paulo. Setembro de 1994. Meia-noite e garoa.');await narr('Guilherme Medeiros encara a página 213 do romance que não anda.');SFX.knock();await sleep(1700);await narr('TOC. TOC. TOC.');await G('Quem bate num sebo à meia-noite?');await narr('Toque na porta da frente.')}}
+};
+async function abrirSarah(){
+  if(S.flags.sarahIn)return;
+  SFX.tone(220,.3,'triangle',.1);S.flags.sarahIn=1;renderSprites();
+  await say('sarah','Polícia Civil. Investigadora Sarah. Posso entrar? Já entrei.');
+  await narr('Ela joga em cima do balcão um livro molhado de garoa: Crônicas do Largo da Forca. A etiqueta é do Sebo Medeiros.');
+  await say('sarah','Otávio Lins. Quarta vítima. Corda no pescoço e três nós desenhados a carvão do lado do corpo.');
+  await say('sarah','Esse livro saiu daqui. O dono dele saiu do mundo. Me explica.');
+  await G('Eu vendo livros, investigadora. Não vendo mortes.');
+  await say('sarah','Então me diz quem vendeu esse. Você tem até amanhã à noite. Depois disso, o suspeito é você.');
+  S.flags.sarahIn=0;renderSprites();
+  await narr('A porta bate. A garoa continua.');
+  await fadeTo('sebo',async()=>{await narr('Na manhã seguinte...')});
+}
+SC.sebo={img:'sebo',f:'brightness(1.28) saturate(.85) contrast(.95)',base:687,gh:390,range:[150,880],start:260,rain:.04,
+  sprites:()=>{const a=[{id:'nathalia',img:'ns0',x:72,y:578,h:228,anim:'nath'},{id:'pedro',img:'pd0',x:858,y:687,h:375,anim:'pedro'}];
+    a.push({id:'nori',img:S.flags.noriVolta?'nori0':'nori2',x:110,y:640,h:72});
+    a.push({id:'tiana',img:'tiana0',x:290,y:660,h:98});return a},
+  hots:[
+    {l:'Vitrine',r:[150,115,320,265],x:330,olhar:'Garoa. Sempre garoa.',andar:async()=>{await narr('Para ir a outro lugar, chame o táxi do Seu Valdir (botão TÁXI).')}},
+    {l:'Máquina de escrever',r:[135,400,75,50],olhar:'Página 213. Ainda.',pegar:'Pesada demais.'},
+    {l:'Livro de vendas',r:[205,438,70,32],olhar:async()=>{await narr('O caderno de vendas do sebo. A folha do dia 12 foi arrancada.');await pista(1,'alguém sumiu com o registro do dia da venda.')},pegar:'Melhor deixar aqui. Isso é prova.'},
+    {l:'Caixa registradora',r:[280,410,70,65],olhar:()=>narr(S.flags.caixa?'Vazio. Eu mesmo raspei.':'CR$ 3.400 no caixa. Não paga nem a conta de luz.'),pegar:async()=>{if(S.flags.caixa)return G('Já peguei tudo. Só sobrou poeira.');S.flags.caixa=1;S.cr+=3400;drawHud();SFX.pick();toast('+ CR$ 3.400');await G('O sebo é meu mesmo. Vai pro táxi.')}},
+    {l:'Pote vazio',r:[612,305,40,50],olhar:'Esse pote está vazio, só farelo. O cheio está lá no alto da estante.',pegar:'Vazio. O Nori já conferiu.'},
+    {l:'Pote de petiscos',r:[620,40,62,66],x:640,olhar:'O pote dos petiscos. Lá em cima, longe do focinho do Nori.',
+      pegar:async()=>{if(has('petisco')||S.flags.petiscoUsado)return G('Já peguei um. O Nori que não se acostume.');if(!S.flags.escada)return G('Não alcanço. Preciso de algo pra subir.');await narr('Subo na escada de rodinhas e pego um petisco.');give('petisco')},
+      usar:'Preciso pegar, não usar.'},
+    {l:'Escada de rodinhas',r:[525,170,90,370],olhar:'Range que nem porta de cemitério.',
+      pegar:async()=>moverEscada(),usar:async()=>moverEscada(),andar:async()=>moverEscada()},
+    {l:'Estante baixa',r:[640,300,200,260],olhar:'Tem um papel no vão debaixo da estante. Nem a mão da Nathalia passa ali.',pegar:'Não cabe a mão. Só alguém bem baixinho e comprido...',
+      usar:async it=>{if(it==='petisco')return G('O petisco é pro Nori, não pra estante.');return G('Não alcanço o papel.')}},
+    {l:'Cartazes',r:[720,180,115,105],olhar:'Cartazes de lançamento. Nenhum é meu.'},
+    {l:'Porta do porão',r:[895,265,129,390],x:860,olhar:async()=>{SFX.growl();await narr('Trancada desde que o vô José Marcelino morreu. A Tiana rosna pra ela.')},
+      andar:async()=>porao(),usar:async it=>{if(it==='velaacesa'||(!it&&has('velaacesa')))return porao();if(it==='vela')return G('Apagada não adianta. Preciso de fogo.');return porao()},pegar:'É uma porta.'}
+  ],
+  npc:{
+    nathalia:{l:'Nathalia',olhar:'Nathalia. Lê latim melhor que eu leio cardápio.',
+      falar:async()=>{if(!S.flags.nota){await say('nathalia','Alguém arrancou a folha do dia da venda. E não fui eu.');await say('nathalia','Mas eu vi um papel caindo debaixo da estante baixa. Só o Nori passa naquele vão.');await G('E o Nori só trabalha com pagamento adiantado.')}
+        else if(!has('velaacesa')){await say('nathalia','Capela dos Aflitos... minha avó ia lá pedir pro Chaguinhas. Batia três vezes na porta.');await say('nathalia','Se o porão estiver escuro, leva fogo. A luz de lá queimou faz meses.')}
+        else await say('nathalia','Vai descer no porão? Leva a Tiana. Ela sente essas coisas.')},
+      usar:async it=>{if(it==='nota')return say('nathalia','"3 batidas"... é o pedido da Capela dos Aflitos.');if(it==='bilhete'){await say('nathalia','Essa letra... é a mesma das anotações do seu avô nos livros do porão.');return}return say('nathalia','Não sei o que fazer com isso.')}},
+    pedro:{l:'Pedro',olhar:'Pedro, o estagiário. Walkman no pescoço, chave na mão, culpa na cara.',
+      falar:async()=>{if(!S.flags.pedro1){S.flags.pedro1=1;await say('pedro','Fui eu que vendi o livro... mas o cara pediu ele pelo nome. Nem olhou a estante.');await say('pedro','E tinha cheiro de vela. Muito cheiro de vela.')}
+        else if(S.flags.capela&&!S.flags.dp)await say('pedro','Se precisar entrar em algum lugar onde não deixam, me leva. Sou desastrado profissional.');
+        else await say('pedro','Tô aqui, chefe. Tá tocando Legião no walkman, então tô em paz.')}},
+    nori:{l:'Nori',olhar:()=>S.flags.noriVolta?narr('Nori, satisfeito, com bafo de petisco.'):narr('Nori. Finge que não está de olho no pote de petiscos.'),
+      falar:async()=>{if(S.flags.noriVolta)return narr('O Nori abana o rabo. Missão cumprida.');await G('Nori, busca!');await narr('Ele abre um olho e fecha de novo.');await G('Nada feito. Ele só trabalha com pagamento adiantado.')},
+      pegar:'Ele finge que pesa 40 quilos.',
+      usar:async it=>{if(it!=='petisco')return narr('O Nori não se interessa.');await noriBusca()}},
+    tiana:{l:'Tiana',olhar:'Tiana. Não tira o olho da porta do porão.',falar:async()=>{SFX.bark();latir();await narr('A Tiana late duas vezes para a porta do porão e rosna baixinho.')},pegar:'Ela escapa e volta pro lugar, de olho no porão.'}
+  },
+  async enter(){if(!S.flags.manha){S.flags.manha=1;await say('nathalia','Bom dia. Você tá com cara de quem viu a polícia.');await G('Vi. Preciso descobrir quem vendeu um livro pra um morto.');await narr('Dica: escolha um verbo embaixo e toque nas coisas. DICA mostra o que dá pra tocar.')}}
+};
+async function moverEscada(){if(S.flags.escada)return narr('A escada já está embaixo do pote de petiscos.');S.flags.escada=1;SFX.tone(140,.5,'sawtooth',.06);await narr('Empurro a escada até a estante do pote de petiscos. Ela range o caminho todo.')}
+async function noriBusca(){
+  take('petisco');S.flags.petiscoUsado=1;
+  await narr('O Nori acorda na hora. Abocanha o petisco, encara a estante baixa e se enfia no vão.');
+  S.flags.noriVolta=1;renderSprites();
+  await narr('Ele volta empoeirado, com um papel na boca.');
+  S.flags.nota=1;give('nota');
+  await say('nathalia','A nota fiscal da venda! Otávio Lins... e tem algo escrito atrás.');
+  await narr('No verso, a lápis: "Capela dos Aflitos, 3 batidas".');
+  await pista(2,'o livro foi vendido pelo Pedro, e o comprador ia para a Capela dos Aflitos.');
+  await sleep(300);SFX.ring();await sleep(2300);
+  await narr('O telefone do balcão toca.');
+  await say('helena','Guilherme? Helena, do Notícias Populares. Revelei o filme da cena do crime do Otávio.');
+  await say('helena','Tem alguém na foto que não estava lá. Uma sombra. De um enforcado.');
+  await scare(1,'Ela descreve a sombra em detalhe. Você sente o pescoço apertar.');
+  await pista(3,'a foto da Helena mostra a sombra de um enforcado que ninguém viu.');
+  S.flags.capela=1;
+  await narr('Capela dos Aflitos liberada no táxi do Seu Valdir.');
+}
+async function porao(){
+  if(!has('velaacesa')){if(has('vela'))return G('Lá embaixo é breu. A vela não acende sozinha.');return G('Lá embaixo é breu, e a lâmpada queimou faz meses. Preciso de luz.')}
+  SFX.fx('porta',.7);await fadeTo('porao');
+}
+SC.capelafora={amb:'chuva',rua:1,img:'capelafora',f:'none',base:650,gh:300,range:[250,960],start:560,rain:.06,showRain:1,follow:'tiana',
+  hots:[
+    {l:'Porta azul da capela',r:[222,240,108,320],x:350,olhar:'Porta azul, gasta de tanta mão. Dizem que quem bate faz pedido ao Chaguinhas.',
+      any:async()=>{if(S.flags.marleneAbriu)return fadeTo('capeladentro');if(!S.flags.nota){SFX.knock();await sleep(600);return narr('Bato na porta. Ninguém atende. Talvez exista um jeito certo de bater.')}
+        await narr('Bato três vezes, como dizia o recado.');SFX.knock();await sleep(1800);await say('marlene','Três batidas... faz quarenta anos que ninguém bate assim. Entra, meu filho.');S.flags.marleneAbriu=1;SFX.fx('porta',.7);await fadeTo('capeladentro')}},
+    {l:'Velas e pedidos',r:[170,520,240,130],olhar:'Velas derretidas e bilhetes molhados. Pedidos de gente que não tem a quem pedir.',pegar:'Mexer nos pedidos dos outros? Nem morto. Principalmente morto.'},
+    {l:'Lanternas',r:[460,230,170,130],olhar:'As lanternas vermelhas da Liberdade. De longe parecem olhos.'},
+    {l:'Poste',r:[610,80,90,180],olhar:'A luz amarela pisca no ritmo da garoa.'},
+    {l:'Beco',r:[400,380,260,160],olhar:'O beco some na garoa. Em 1821, o povo veio por aqui ver o enforcamento.'},
+    {l:'Parede pichada',r:[800,380,224,250],olhar:'"PIXAÇÃO". Pelo menos alguém escreve nesse bairro.'}
+  ],
+  async enter(){if(S.flags.bilhete&&!S.flags.vulto){S.flags.vulto=1;await sleep(400);SFX.growl();latir();await narr('Ao sair, a Tiana trava e encara o fundo do beco. Rosna antes de qualquer coisa acontecer.');SFX.sting();
+      await narr('Lá no fundo, um vulto com uma corda no pescoço. Ele some na garoa.');await narr('Graças ao aviso da Tiana, Guilherme estava preparado. A sanidade fica inteira.');
+      await G('Preciso ver o laudo dessas mortes. A Sarah não vai me mostrar... mas o Ayrton, plantonista da delegacia, talvez nem perceba.');S.flags.dp=1;await narr('1º DP liberado no táxi do Seu Valdir.')}
+    else if(!S.flags.capelaVisit){S.flags.capelaVisit=1;await narr('Liberdade. A Capela dos Aflitos, onde rezavam os condenados do Largo da Forca. A Tiana veio junto.')}}
+};
+SC.capeladentro={amb:'capela',img:'capeladentro',f:'none',base:687,gh:400,range:[230,850],start:600,rain:.03,follow:'tiana',
+  sprites:()=>[{id:'marlene',img:'marlene',x:400,y:650,h:380}],
+  exits:[{l:'Sair',r:[0,560,140,127],to:'capelafora'}],
+  hots:[
+    {l:'Banca de velas',r:[65,300,260,220],x:300,olhar:'Velas a CR$ 500. "Pague na lata", diz a plaquinha.',
+      pegar:async()=>comprarVela(),usar:async()=>comprarVela()},
+    {l:'Altar',r:[470,290,190,190],olhar:'Um altar simples. Alguém deixou flores frescas. Hoje.'},
+    {l:'Crucifixo',r:[535,55,85,150],olhar:'O Cristo tem marcas no pescoço. Ou é a madeira rachada. Prefiro achar que é a madeira.'},
+    {l:'Quadros de santos',r:[0,110,140,250],olhar:'Santos de olhos tristes. Todos olhando para a caixa de bilhetes.'},
+    {l:'Caixa de bilhetes',r:[665,395,175,110],olhar:'Caixa de madeira com cadeado. Os pedidos antigos ficam aqui.',
+      pegar:'Trancada. A chave deve estar com a Dona Marlene.',usar:async it=>{if(it==='nota')return marleneBilhete();return G('Está trancada.')}},
+    {l:'Fundo escuro',r:[880,140,144,470],x:830,olhar:async()=>{if(S.flags.fundo)return narr('Só escuro agora. Graças a Deus.');S.flags.fundo=1;SFX.bark();latir();await narr('Antes de você olhar, a Tiana late para o escuro.');SFX.sting();await narr('Uma mão pálida se recolhe para a sombra. Você estava avisado: a sanidade fica inteira.')},
+      andar:'Não vou entrar ali. A Tiana também não quer.'}
+  ],
+  npc:{marlene:{l:'Dona Marlene',olhar:'Dona Marlene. Zela a capela há quarenta anos. Tem uma chavinha na mão.',
+      falar:async()=>{if(S.flags.bilhete)return say('marlene','Vai com Deus, meu filho. E com a cachorrinha. Ela enxerga mais que nós.');
+        if(has('nota')){await say('marlene','O que te traz aqui, meu filho?');await G('Esse recado. Estava com um homem que morreu.');return marleneBilhete()}
+        await say('marlene','A capela é dos aflitos. Quem chega aqui sempre traz alguma coisa na mão.')},
+      usar:async it=>{if(it==='nota')return marleneBilhete();if(it==='bilhete')return say('marlene','Esse bilhete esperou quarenta anos por você.');return say('marlene','Isso não é pra mim, meu filho.')}}},
+  async enter(){if(!S.flags.dentro){S.flags.dentro=1;await narr('Dentro, cheiro de cera e mofo. Dona Marlene apoia a vassoura e te mede de cima a baixo.')}}
+};
+async function comprarVela(){if(has('vela')||has('velaacesa'))return G('Uma vela basta. Espero.');if(S.cr<500){await G('Não tenho nem CR$ 500...');await say('marlene','Leva, meu filho. O Chaguinhas não cobra de quem está aflito.');give('vela');return}S.cr-=500;drawHud();await narr('Deixo CR$ 500 na lata e pego uma vela.');give('vela')}
+async function marleneBilhete(){if(S.flags.bilhete)return say('marlene','Já te dei o que era seu.');
+  await narr('Dona Marlene lê o recado da nota fiscal e fica pálida.');
+  await say('marlene','Esse homem esteve aqui semana passada. Pediu pra ver os bilhetes velhos.');
+  await narr('Ela abre o cadeado da caixa e tira um papel amarelado, dobrado em quatro.');
+  await say('marlene','Esse aí eu nunca joguei fora. Tem o seu sobrenome, meu filho.');
+  S.flags.bilhete=1;give('bilhete');
+  await pista(4,'"O último Medeiros paga a corda. 20/9". O bilhete é antigo.');
+  await G('Vinte de setembro... o dia em que enforcaram o Chaguinhas.');
+}
+SC.delegacia={amb:'delegacia',img:'delegacia',f:'none',base:687,gh:410,range:[230,820],start:330,rain:.04,
+  sprites:()=>{const a=[{id:'pedro',img:'pd0',x:140,y:687,h:395,anim:'pedro'}];if(!(S.flags.distr>0))a.push({id:'plantonista',img:'plantonista',x:905,y:687,h:420,flip:1});return a},
+  hots:[
+    {l:'Janela',r:[0,140,230,270],x:250,olhar:'Grade e garoa. A vista mais honesta da cidade.'},
+    {l:'Arquivo de aço',r:[300,240,195,320],olhar:async()=>{if(!(S.flags.distr>0))return G('O Ayrton está de olho. Preciso de uma distração.');await narr('Pasta "CASO CORDA". O laudo diz: fibra de cânhamo com mais de 150 anos.');await pista(5,'a corda dos crimes tem mais de 150 anos.')},
+      pegar:async()=>SC.delegacia.hots[1].olhar()},
+    {l:'Ventilador',r:[380,60,290,90],olhar:'Gira devagar. Não refresca ninguém desde 1987.'},
+    {l:'Máquina de escrever',r:[495,405,115,75],olhar:'Um boletim pela metade: "...três nós desenhados a carvão..."'},
+    {l:'Telefone',r:[712,420,80,55],olhar:'O telefone da delegacia.',usar:'Não vou ligar daqui. Seria a primeira coisa que a Sarah descobriria.'},
+    {l:'Cigarros e isqueiro',r:[565,500,100,50],olhar:'Um maço de cigarro e um Zippo prateado.',
+      pegar:async()=>{if(has('isqueiro')||S.flags.isq)return G('Já está comigo.');if(!(S.flags.distr>0))return G('Com o Ayrton olhando? Não.');S.flags.isq=1;give('isqueiro')}},
+    {l:'Mural das vítimas',r:[660,195,335,230],olhar:async()=>{if(!(S.flags.distr>0))return G('Daqui não consigo ler. E o Ayrton não sai da frente.');await narr('Quatro fotos ligadas por linha vermelha. Ao lado de cada nome: "comprou livro sobre o Largo da Forca".');await pista(6,'as quatro vítimas compraram livros sobre o Largo da Forca.')}},
+    {l:'Caixas e papéis',r:[20,510,250,120],olhar:'Processos esquecidos. Alguns de 1954.'}
+  ],
+  npc:{
+    plantonista:{l:'Ayrton',olhar:'Ayrton, o plantonista. Café na mão, preguiça no olhar.',falar:async()=>{await say('plantonista','Sem autorização da Dra. Sarah, nada. Nem banheiro.')},usar:async()=>say('plantonista','Tá querendo me subornar? Com isso?')},
+    pedro:{l:'Pedro',olhar:'Pedro. Pronto para causar.',
+      falar:async()=>{if(S.flags.distr>0)return say('pedro','Anda logo, chefe! Ele já tá voltando!');
+        await say('pedro',S.flags.distrN?'De novo? Tá bom... último café.':'Deixa comigo. Sou desastrado profissional.');
+        S.flags.distrN=(S.flags.distrN||0)+1;SFX.fx('cafe');await narr('O Pedro "tropeça" e derruba um copo de café no balcão. O Ayrton sai xingando atrás de um pano.');
+        S.flags.distr=6;renderSprites();drawHud()}}
+  },
+  async enter(){if(!S.flags.dpVisit){S.flags.dpVisit=1;await narr('1º Distrito Policial. Pedro veio junto, mascando chiclete.');await say('plantonista','Pois não?')}}
+};
+SC.porao={amb:'porao',img:'porao',f:'brightness(.95)',base:687,gh:400,range:[160,880],start:300,rain:.02,dark:1,follow:'tiana',follow2:'nori',
+  exits:[{l:'Subir',r:[0,70,330,250],to:'sebo'}],
+  hots:[
+    {l:'Lâmpada',r:[540,80,50,60],olhar:'Queimada. Claro.',usar:'Queimada. Não tem o que fazer.'},
+    {l:'Caixas de livros',r:[200,330,240,190],olhar:async()=>{await narr('Livros do vô José Marcelino. No meio deles, um caderno de 1954 com três nós desenhados na capa.');await pista(7,'o avô de Guilherme registrou um crime igual em 1954.')},pegar:async()=>SC.porao.hots[1].olhar()},
+    {l:'Caixas mofadas',r:[830,370,194,300],x:800,olhar:'Livros mofados. Cheiro de cemitério molhado.'},
+    {l:'Parede do fundo',r:[370,190,480,230],x:610,olhar:'Tijolo úmido. A Tiana não para de latir para cá.',
+      usar:async it=>{if(S.flags.ligacao||S.pistas.includes(8))return narr('Os três nós e o MEDEIROS 1821 continuam lá. Melhor não olhar de novo.');if(it==='velaacesa'||(!it&&has('velaacesa')))return revelar();return G('Preciso de luz pra ver direito.')},pegar:'É uma parede.'}
+  ],
+  async enter(){if(!S.flags.desceu){S.flags.desceu=1;await narr('Você desce com a vela acesa. A Tiana e o Nori vêm logo atrás.');SFX.fx('degrau');await hurt(1,'Um degrau podre quebra no meio do caminho.');SFX.bark();latir();await narr('A Tiana dispara para o fundo e late para a parede.')}}
+};
+async function revelar(){
+  await narr('Você aproxima a vela da parede do fundo...');
+  await fadeTo('parede');
+}
+SC.parede={amb:'porao',img:'parede',f:'none',noWalk:1,hots:[],
+  async enter(){
+    await sleep(500);SFX.sting();
+    await narr('Três nós desenhados a carvão. E, riscado no tijolo: MEDEIROS 1821.');
+    await scare(2,'O nome da sua família, na parede do seu porão.');
+    await pista(8,'o símbolo dos três nós e "MEDEIROS 1821" estão no porão do sebo.');
+    await G('Medeiros, 1821... vô José Marcelino, o que o senhor escondeu aqui?');
+    await final();
+  }
+};
+
+SC.redacao={amb:'redacao',img:'redacao',base:687,gh:390,range:[150,880],start:250,
+  sprites:()=>[{id:'helena',img:'helena',x:745,y:478,h:235,flip:1}],
+  hots:[
+    {l:'Janela',r:[0,110,335,225],x:260,olhar:'A cidade lá fora, molhada e acesa. Ninguém dorme no centro.'},
+    {l:'Manchetes',r:[360,180,180,130],olhar:'"Crime bizarro na Luz", "Corpo enforcado no Tietê". O jornal que, se espremer, sai sangue.'},
+    {l:'Mais manchetes',r:[565,175,215,140],olhar:'"Assassino em fuga", "Golpe no Tietê". Nenhuma fala do Largo da Forca. Ainda.'},
+    {l:'Varal de fotos',r:[695,30,320,140],x:760,olhar:async()=>{if(S.flags.varal)return narr('Melhor não olhar de novo.');S.flags.varal=1;await narr('Fotos da cena do crime secando no varal. Em todas, a mesma sombra de um enforcado.');await scare(1,'Numa delas, a sombra parece olhar para a câmera.')}},
+    {l:'Laboratório',r:[812,205,120,210],x:820,olhar:'A luz vermelha está acesa: tem filme sendo revelado lá dentro.',any:async()=>labHelena()},
+    {l:'Máquina de escrever',r:[40,450,200,90],olhar:'Uma lauda pela metade: "O ESCRITOR MALDITO DA LIBERDADE". Espero que não seja sobre mim.'},
+    {l:'Telefone',r:[765,525,105,80],olhar:'Toca sem parar. Ninguém atende jornal à meia-noite.'}
+  ],
+  npc:{helena:{l:'Helena',olhar:'Helena. Fotógrafa do NP. Já viu de tudo, e agora viu demais.',
+    falar:async()=>{if(!S.flags.recorte)return labHelena();await say('helena','Toma cuidado, Guilherme. As fotos não mentem. As pessoas, sim.')},
+    usar:async it=>{if(it==='bilhete'){await say('helena','"20/9"... a mesma data do recorte. Isso não é coincidência.');return}return say('helena','Isso eu não sei fotografar.')}}},
+  async enter(){if(!S.flags.npVisit){S.flags.npVisit=1;await narr('Redação do Notícias Populares. Meia-noite, e ninguém dorme aqui.');await say('helena','Guilherme! Vem cá. Achei uma coisa no arquivo que você precisa ver.')}}
+};
+async function labHelena(){if(S.flags.recorte)return say('helena','Já te dei o recorte. O resto é com você.');
+  await say('helena','Fui no arquivo de 1954. Olha isso.');
+  await narr('Ela te entrega um recorte amarelado do próprio NP, de 21 de setembro de 1954.');
+  S.flags.recorte=1;give('recorte');
+  await pista(9,'em 20 de setembro de 1954, Antônio Medeiros, irmão do vô José Marcelino, foi achado enforcado com três nós a carvão.');
+  await G('Vinte de setembro de novo. A mesma data da execução do Chaguinhas.');
+  await say('helena','Os Medeiros morrem sempre no mesmo dia, Guilherme. Você é o próximo da lista?')}
+SC.casafora={amb:'praia',rua:1,img:'casafora',base:680,gh:300,range:[150,950],start:640,showRain:1,follow:'tiana',trovao:1,
+  hots:[
+    {l:'Portão',r:[120,400,115,160],x:240,olhar:'Portão de ferro enferrujado. Range desde que eu era criança.',any:async()=>{SFX.fx('portao',.8);await sleep(400);await fadeTo('sala')}},
+    {l:'Porta da casa',r:[395,320,60,100],x:420,olhar:'A porta está entreaberta. A vó me espera.',any:async()=>{SFX.fx('portao',.8);await sleep(400);await fadeTo('sala')}},
+    {l:'Rede',r:[460,290,230,130],olhar:'A rede do vô José Marcelino. Ninguém deita nela desde o enterro.',usar:'Agora não é hora de cochilar.'},
+    {l:'Mar',r:[850,330,174,130],olhar:'O mar está furioso hoje. Ou com medo.'},
+    {l:'Coqueiro',r:[0,0,280,400],x:200,olhar:'O coqueiro dobra com o vento. Parece fazer reverência.'},
+    {l:'Luz da varanda',r:[485,285,40,40],olhar:'Pisca a cada trovão.'}
+  ],
+  async enter(){if(!S.flags.praia){S.flags.praia=1;await narr('Uma hora de estrada no Opala do Seu Valdir. Praia Grande, debaixo de tempestade.');await G('A casa da vó. Faz anos que eu não venho aqui.')}}
+};
+SC.sala={amb:'casa-vo',img:'sala',base:687,gh:400,range:[230,680],start:320,follow:'tiana',trovao:1,raio:'sala_raio',
+  sprites:()=>[{id:'izabel',img:'izabel',x:560,y:635,h:330}],
+  exits:[{l:'Sair',r:[0,560,140,127],to:'casafora'}],
+  hots:[
+    {l:'Retratos da família',r:[5,55,245,185],x:250,olhar:'Os Medeiros. O vô José Marcelino, a vó Maria Izabel jovem... e um homem que ninguém sabe dizer quem é.'},
+    {l:'Relógio',r:[255,120,50,130],olhar:'Parado nas 3h. Desde 1954, diz a vó.'},
+    {l:'Abajur',r:[365,255,65,125],olhar:'A única luz quente da casa.'},
+    {l:'Sofá',r:[0,300,470,300],x:300,olhar:'Sofá com capa de plástico. Clássico de vó.',usar:'Sentar agora? Com esse baú me encarando?'},
+    {l:'Janela',r:[460,85,330,295],x:560,olhar:'Mar revolto e relâmpagos. A Tiana não tira o olho.'},
+    {l:'Santa',r:[835,80,105,165],x:680,olhar:'Nossa Senhora Aparecida, com uma vela acesa. A vó reza pra ela toda noite.',usar:async()=>{if(S.flags.rezou||S.san>=10)return narr('Você faz o sinal da cruz.');return rezar()},falar:async()=>{if(S.flags.rezou||S.san>=10)return narr('Você faz o sinal da cruz.');return rezar()}},
+    {l:'Televisão',r:[940,265,84,295],x:680,olhar:'Fora do ar. Só chiado.'},
+    {l:'Baú',r:[700,370,190,175],x:670,olhar:'Baú de madeira com cintas de ferro. Um cadeado de 4 números.',any:async()=>abrirBau()}
+  ],
+  npc:{izabel:{l:'Vó Maria Izabel',olhar:'Vó Maria Izabel. O terço não sai da mão dela.',
+    falar:async()=>{if(S.san<10&&!S.flags.rezou)return rezar();if(S.flags.bauAberto)return say('izabel','Seu avô carregou isso sozinho a vida inteira. Agora é com você, meu neto.');
+      await say('izabel','O cadeado tem quatro números. Seu avô dizia que a senha era "a data que condena os Medeiros".');
+      if(S.flags.recorte)await say('izabel','O dia em que levaram o Antônio... e o dia em que enforcaram aquele moço, o Chaguinhas.');
+      else await say('izabel','Tem coisa no jornal daquela época. Sua amiga fotógrafa pode achar.')},
+    usar:async it=>{if(it==='bilhete')return say('izabel','É a letra do seu avô, sim. Vinte do nove... sempre essa data.');if(it==='recorte')return say('izabel','O Antônio... irmão do seu avô. Eu era mocinha. Vinte de setembro.');return say('izabel','Guarda isso, meu filho.')}}},
+  async enter(){if(!S.flags.vo){S.flags.vo=1;await say('izabel','Guilherme! Entra, meu filho, tá encharcado.');await say('izabel','O baú do seu avô está ali no canto. A Tiana late pra ele desde que ele morreu.');await G('Vó... o que tem nesse baú?');await say('izabel','A verdade sobre o nosso sobrenome. E eu nunca tive coragem de abrir.');await rezar()}}
+};
+async function rezar(){if(S.san>=10||S.flags.rezou)return;S.flags.rezou=1;await say('izabel','Vem cá, meu neto. Deixa a vó rezar por você. Você está com os olhos de quem viu coisa.');SFX.bell();await narr('Ela segura suas mãos com o terço e reza baixinho. O peito fica mais leve.');S.san=Math.min(10,S.san+4);drawHud();toast('SANIDADE +4')}
+async function abrirBau(){if(S.flags.bauAberto)return fadeTo('bau');
+  const c=await cadeado();if(c===null)return;
+  if(c!=='2009'){SFX.tone(140,.25,'square',.12);await narr(`${c}... o cadeado não abre.`);if(S.flags.recorte||has('bilhete'))await G('A data que condena os Medeiros... dia e mês.');return}
+  SFX.fx('bau');await narr('2-0-0-9. Vinte do nove. O cadeado se abre com um estalo.');S.flags.bauAberto=1;await fadeTo('bau')}
+SC.bau={amb:'casa-vo',img:'bauaberto',noWalk:1,
+  exits:[{l:'Fechar',r:[0,580,170,107],to:'sala'}],
+  hots:[
+    {l:'Cartas antigas',r:[155,250,240,260],olhar:async()=>{await narr('Cartas de 1821, assinadas por Joaquim Medeiros: "A corda arrebentou três vezes. O povo pediu perdão. Na quarta, cumpri a ordem."');await pista(10,'um Medeiros foi o carrasco do Chaguinhas.');await checkBau()},pegar:async()=>SC.bau.hots[0].olhar()},
+    {l:'Diário do vô',r:[330,185,215,285],olhar:async()=>{await narr('Diário do vô José Marcelino: "A Irmandade dos Três Nós voltou. Querem o sangue do último Medeiros para fechar o ritual num 20 de setembro."');await pista(11,'a Irmandade dos Três Nós quer o sangue do último Medeiros.');await checkBau()},pegar:async()=>SC.bau.hots[1].olhar()},
+    {l:'Desenho dos três nós',r:[465,310,225,210],olhar:'Os três nós a carvão. Embaixo, na letra do vô: "Um nó para cada vez que a corda arrebentou."'},
+    {l:'Retrato antigo',r:[635,135,185,210],olhar:async()=>{if(!S.pistas.includes(12)){await narr('"Joaquim Medeiros, 1821". O carrasco.');await scare(1,'Ele tem os seus olhos.');await pista(12,'o retrato do carrasco Joaquim Medeiros, de 1821.')}else await narr('Os mesmos olhos. Prefiro não encarar.');await checkBau()}},
+    {l:'Corda',r:[640,330,225,190],olhar:'Um rolo de corda velha de cânhamo.',pegar:async()=>{if(has('corda'))return G('Já está comigo.');give('corda');await pista(13,'um pedaço da corda original do Largo da Forca.');await checkBau()}},
+    {l:'Vela',r:[205,140,70,135],olhar:'A vó acendeu essa vela dentro do baú. "Pra luz não deixar ele fugir", ela disse.'}
+  ],
+  async enter(){if(!S.flags.bauVisto){S.flags.bauVisto=1;await narr('Dentro do baú: cartas, um diário, um retrato, um desenho e um rolo de corda velha.')}}
+};
+async function checkBau(){if(S.flags.fim)return;if([10,11,12,13].every(n=>S.pistas.includes(n))){await G('Meu sangue é o que eles querem pra terminar o que começou em 1821.');await fimCap1()}}
+
+/* ---------------- MOTOR ---------------- */
+let gx=0,gdir=1,gEl=null;
+function cur(){return SC[S.scene]}
+function setFilter(){const c=cur();$('#bg').style.setProperty('--f',c.f||'none');$('#bg').style.filter=c.f||'none'}
+function renderSprites(){
+  const c=cur(),box=$('#sprites');box.innerHTML='';
+  const list=c.sprites?c.sprites():[];
+  list.forEach(sp=>{const im=new Image();im.src=IMG(sp.img);im.className='spr'+(c.npc&&c.npc[sp.id]?' npc':'');im.dataset.id=sp.id;
+    im.style.height=sp.h+'px';im.style.left=sp.x+'px';im.style.top=(sp.y-sp.h)+'px';im.style.transform=`translateX(-50%) scaleX(${sp.flip?-1:1})`;
+    if(!sp.flip)im.style.setProperty('--fx','1');im.classList.add('idle');im.style.animationDelay=(-Math.random()*3)+'s';
+    if(c.npc&&c.npc[sp.id]){im._t={...c.npc[sp.id],x:sp.x,npc:1};im.onclick=e=>{e.stopPropagation();act({...c.npc[sp.id],x:sp.x,npc:1})};im.onmouseenter=()=>sentence(c.npc[sp.id].l);im.onmouseleave=()=>sentence()}
+    if(sp.anim){im._anim=sp.anim;runAnim(im)}
+    box.appendChild(im)});
+  gEl=null;
+  if(!c.noWalk){
+    if(c.follow){const f=new Image();f.src=IMG(S.scene==='porao'?'tiana1':'tiana0');f.className='spr idle';f.id='f1';f.style.height=(c.gh*.25)+'px';box.appendChild(f)}
+    if(c.follow2){const f=new Image();f.src=IMG('nori0');f.className='spr idle';f.id='f2';f.style.height=(c.gh*.21)+'px';box.appendChild(f)}
+    gEl=document.createElement('div');gEl.innerHTML=`<img class=gst src=${IMG('guilherme')}><img class=gwk src=${IMG('gw0')}>`;gEl.className='spr gman idle';gEl.dataset.id='guilherme';gEl.style.height=c.gh+'px';gEl.style.width=(c.gh*235/654)+'px';gEl.style.top=(c.base-c.gh)+'px';box.appendChild(gEl);placeG();
+  }
+}
+function placeG(){const c=cur();if(!gEl)return;gEl.style.left=gx+'px';gEl.style.transform='translateX(-50%)';gEl.querySelector('.gst').style.transform=`scaleX(${gdir>0?-1:1})`;gEl.querySelector('.gwk').style.transform=gdir>0?'translateX(-59.7%)':'translateX(-40.3%) scaleX(-1)';
+  const f1=$('#f1'),f2=$('#f2');
+  if(f1){const h=c.gh*.25;f1.style.left=(gx-gdir*c.gh*.32)+'px';f1.style.top=(c.base-h)+'px';f1.style.transform=`translateX(-50%) scaleX(${gdir>0?1:-1})`}
+  if(f2){const h=c.gh*.21;f2.style.left=(gx-gdir*c.gh*.62)+'px';f2.style.top=(c.base-h+4)+'px';f2.style.transform=`translateX(-50%) scaleX(${gdir>0?1:-1})`}
+  if(c.dark)$('#dark').style.background=`radial-gradient(circle at ${gx+gdir*30}px ${c.base-c.gh*.6}px, rgba(0,0,0,0) 0, rgba(0,0,0,0) 150px, rgba(0,0,0,.6) 260px, rgba(0,0,0,.95) 420px)`;
+}
+function walkTo(x){const c=cur();if(c.noWalk||!gEl)return Promise.resolve();x=Math.max(c.range[0],Math.min(c.range[1],x));const d=x-gx;if(Math.abs(d)<12)return Promise.resolve();
+  gdir=d>0?1:-1;const t0=performance.now(),dur=Math.abs(d)/0.36,x0=gx;gEl.classList.remove('idle');gEl.classList.add('walking');dogs(true);SFX.steps(true,c.rua);
+  return new Promise(res=>{const wk=gEl.querySelector('.gwk');let lf=-1;const step=now=>{const k=Math.min(1,(now-t0)/dur);gx=x0+d*k;const fr=Math.floor((now-t0)/105)%6;if(fr!==lf){lf=fr;wk.src=IMG('gw'+fr)}placeG();if(k<1)requestAnimationFrame(step);else{gEl.classList.remove('walking');gEl.classList.add('idle');dogs(false);SFX.steps(false);S.gx=gx;res()}};requestAnimationFrame(step)})}
+let dogT=null;
+function dogs(w){const f1=$('#f1'),f2=$('#f2');clearInterval(dogT);
+  if(f1){f1.classList.toggle('dogwalk',w);f1.classList.toggle('idle',!w);f1.src=IMG(S.scene==='porao'&&!w?'tiana1':'tiana0')}
+  if(f2){f2.classList.toggle('dogwalk',w);f2.classList.toggle('idle',!w);f2.src=IMG('nori0')}
+  if(w){let n=0;dogT=setInterval(()=>{n++;if(f1)f1.src=IMG(n%2?'tiana2':'tiana0');if(f2)f2.src=IMG(n%2?'nori1':'nori0')},170)}}
+function anim(id,cls='talk'){const e=document.querySelector(`.spr[data-id="${id}"]`);if(!e)return;e.classList.remove(cls);void e.offsetWidth;e.classList.add(cls);setTimeout(()=>e.classList.remove(cls),1100)}
+function latir(){const e=document.querySelector('.spr[data-id="tiana"]')||$('#f1');if(!e)return;const o=e.src;let n=0;const t=setInterval(()=>{e.src=IMG(n%2?'tiana0':'tiana1');if(++n>5){clearInterval(t);e.src=o}},180)}
+const ANIMS={
+  nath:{talk:'ns3',seq:()=>[['ns0',2600],['ns1',350],['ns2',2400],Math.random()<.45?['ns3',1700]:['ns0',900]]},
+  pedro:{talk:'pd0',seq:()=>{const a=[];for(let k=0;k<4;k++)a.push(['pd0',130],['pd1',130],['pd2',130]);a.push(['pd0',1600],['pd3',800]);for(let k=0;k<6;k++)a.push(['pd4',360],['pd5',360]);a.push(['pd5',1800]);return a}}
+};
+async function runAnim(el){await sleep(Math.random()*1200);while(el.isConnected){for(const [f,ms] of ANIMS[el._anim].seq()){if(!el.isConnected)return;el.src=IMG(el._hold||f);await sleep(ms)}}}
+['izabel','helena','sala_raio','ns0','ns1','ns2','ns3','pd0','pd1','pd2','pd3','pd4','pd5'].forEach(n=>{const im=new Image();im.src=IMG(n)});
+/* arrastar itens */
+let drag=null;
+function alvo(x,y){const el=document.elementFromPoint(x,y);if(!el)return null;return el.closest('.hs,.spr.npc,.slot')}
+function startDrag(e,it,slot){if(busy||dlgResolve)return;e.preventDefault();drag={it,x:e.clientX,y:e.clientY,moved:false,over:null};
+  const mv=ev=>{if(!drag)return;const dx=ev.clientX-drag.x,dy=ev.clientY-drag.y;if(!drag.moved&&Math.hypot(dx,dy)<10)return;
+    if(!drag.moved){drag.moved=true;const g=$('#ghost');g.src=IMG(ICON[it]);g.style.display='block';selItem=it;verb='usar';drawVerbs();drawInv()}
+    const g=$('#ghost');g.style.left=ev.clientX+'px';g.style.top=ev.clientY+'px';
+    const t=alvo(ev.clientX,ev.clientY);if(drag.over&&drag.over!==t)drag.over.classList.remove('drop');drag.over=t;
+    if(t&&!(t.classList.contains('slot')&&t._item===it)){t.classList.add('drop');sentence(t._t?t._t.l:(t._item?ITEMS[t._item].n:null))}else sentence()};
+  const up=async ev=>{document.removeEventListener('pointermove',mv);document.removeEventListener('pointerup',up);document.removeEventListener('pointercancel',up);
+    const d=drag;drag=null;$('#ghost').style.display='none';if(d.over)d.over.classList.remove('drop');
+    if(!d.moved){invClick(it);return}
+    const t=alvo(ev.clientX,ev.clientY);
+    if(t&&t._t){verb='usar';selItem=it;await act(t._t);return}
+    if(t&&t._item&&t._item!==it){busy=true;selItem=null;await combinar(it,t._item);verb='andar';drawVerbs();drawInv();sentence();busy=false;salvar();return}
+    selItem=null;verb='andar';drawVerbs();drawInv();sentence()};
+  document.addEventListener('pointermove',mv);document.addEventListener('pointerup',up);document.addEventListener('pointercancel',up)}
+function renderHots(){const c=cur(),box=$('#hots');box.innerHTML='';
+  const mk=(h,isExit)=>{const d=document.createElement('div');d.className='hs';const[x,y,w,hh]=h.r;Object.assign(d.style,{left:x+'px',top:y+'px',width:w+'px',height:hh+'px'});
+    if(!isExit)d._t=h;d.onclick=e=>{e.stopPropagation();isExit?exitTo(h):act(h)};d.onmouseenter=()=>sentence(h.l);d.onmouseleave=()=>sentence();box.appendChild(d);
+    if(isExit){const a=document.createElement('div');a.className='exit';Object.assign(a.style,{left:x+'px',top:y+'px',width:w+'px',height:hh+'px'});a.textContent='◀ '+h.l.toUpperCase();box.appendChild(a)}};
+  (c.hots||[]).forEach(h=>mk(h));(c.exits||[]).forEach(h=>mk(h,1));}
+$('#scene').addEventListener('click',e=>{if(busy||dlgResolve)return;const c=cur();if(c.noWalk)return;const x=toStage(e.clientX,e.clientY).x;
+  if(selItem){selItem=null;drawInv();sentence();return}
+  busy=true;walkTo(x).then(()=>{busy=false;salvar()})});
+
+async function exitTo(h){if(busy||dlgResolve)return;busy=true;try{await walkTo(h.r[0]+h.r[2]/2);await fadeTo(h.to)}catch(e){await falha(e)}busy=false}
+
+async function act(h){
+  if(busy||dlgResolve)return;busy=true;const it=selItem;const v=verb;sentence(h.l);
+  try{
+    const tx=h.x!=null?h.x:(h.r?h.r[0]+h.r[2]/2:gx);
+    if(!h.npc||Math.abs(tx-gx)>220)await walkTo(h.npc?tx+(tx>gx?-150:150):tx);
+    let fn=h.any&&v!=='olhar'?h.any:h[v];
+    if(v==='usar'&&it){fn=h.usar?()=>h.usar(it):null;if(!fn){await narr(`Usar ${ITEMS[it].n.toLowerCase()} em ${h.l.toLowerCase()}? Não adianta.`)}}
+    if(fn){if(typeof fn==='function'){await fn(it)}else await narr(fn)}
+    else if(!(v==='usar'&&it)){
+      const def={andar:null,olhar:`${h.l}. Nada de especial.`,pegar:'Não dá pra pegar isso.',falar:h.npc?'...':'Não acho que vá me responder.',usar:'Não sei como usar isso.'}[v];
+      if(def)await narr(def);
+    }
+    await tick();
+  }catch(e){await falha(e)}
+  verb='andar';selItem=null;drawVerbs();drawInv();sentence();drawHud();busy=false;salvar();
+}
+async function tick(){
+  if(S.scene==='delegacia'&&S.flags.distr>0){S.flags.distr--;drawHud();
+    if(S.flags.distr===0){renderSprites();await say('plantonista','Ei! Que que cê tá fazendo aí atrás do balcão?');await hurt(1,'Ele te empurra porta afora.');await fadeTo('sebo',()=>narr('Você volta ao sebo de táxi, com o orgulho machucado.'))}}
+}
+async function invClick(it){
+  if(busy||dlgResolve)return;
+  if(verb==='olhar'){busy=true;await narr(ITEMS[it].n+': '+ITEMS[it].d);verb='andar';drawVerbs();sentence();busy=false;return}
+  if(selItem&&selItem!==it){busy=true;const a=selItem;selItem=null;await combinar(a,it);verb='andar';drawVerbs();drawInv();sentence();busy=false;salvar();return}
+  if(selItem===it){selItem=null;verb='andar';drawVerbs();drawInv();sentence();return}
+  verb='usar';selItem=it;drawVerbs();drawInv();sentence();
+}
+async function combinar(a,b){const p=[a,b].sort().join('+');
+  if(p==='isqueiro+vela'){SFX.fx('isqueiro');take('vela');give('velaacesa');await narr('A chama pega na primeira. Agora dá pra descer no porão.');return}
+  if(p==='nota+bilhete'||p==='bilhete+nota'){await G('O recado e o bilhete... a mesma capela, quarenta anos de diferença.');return}
+  await narr('Isso não combina com aquilo.')}
+
+async function fadeTo(name,mid){const was=busy;busy=true;try{await fadeIn(name,mid)}finally{busy=was}}
+async function fadeIn(name,mid){const f=$('#fade');f.style.opacity=1;await sleep(380);
+  S.scene=name;const c=cur();gx=(S.gx!=null&&S._keepG)?S.gx:c.start;S._keepG=0;S.gx=gx;gdir=1;
+  if(name!=='parede'){const cp=JSON.parse(JSON.stringify(S));delete cp.cp;S.cp=cp}
+  draw();salvar();if(mid)await mid();f.style.opacity=0;await sleep(380);
+  if(c.enter)await c.enter();salvar();}
+function draw(){const c=cur();$('#bg').src=IMG(c.img);setFilter();$('#dark').style.display=c.dark?'block':'none';$('#rain').style.display=c.showRain?'block':'none';SFX.amb(c.amb||'chuva-dentro');trovoada(c);
+  renderHots();renderSprites();drawHud();drawInv();drawVerbs();sentence();$('#bmap').style.opacity=taxiOk()?1:.4}
+function taxiOk(){return ['sebo','capelafora','capeladentro','delegacia','redacao','casafora','sala'].includes(S.scene)}
+
+async function falha(e){if(e!=='morte'&&e!=='loucura'){console.error(e);return}
+  dlgResolve=null;$('#dlg').classList.remove('on');
+  await overlay(`<div class="title" style="font-size:30px;color:#c33">${e==='morte'?'GUILHERME CAIU':'GUILHERME ENLOUQUECEU'}</div><p>${e==='morte'?'O corpo não aguentou.':'A mente não aguentou. As vozes venceram.'}</p><div class="btn" data-k="1">TENTAR DE NOVO</div>`,'porao');
+  const cp=S.cp;S=JSON.parse(JSON.stringify(cp));S.cp=cp;S.vida=Math.max(S.vida,4);S.san=Math.max(S.san,4);S._keepG=0;closeOv();await fadeTo(S.scene)}
+function overlay(html,bg){return new Promise(res=>{const o=$('#ov');$('#ovbg').style.backgroundImage=bg?`url(${IMG(bg)})`:'none';$('#ovc').innerHTML=html;o.classList.add('on');o.querySelectorAll('[data-k]').forEach(b=>b.onclick=e=>{e.stopPropagation();if(b.dataset.k==='n'||b.dataset.k==='c')telaCheia();res(b.dataset.k)})})}
+function closeOv(){$('#ov').classList.remove('on')}
+
+/* táxi */
+$('#bmap').onclick=async e=>{e.stopPropagation();if(busy||dlgResolve||!taxiOk())return;busy=true;
+  const here={capeladentro:'capelafora',sala:'casafora'}[S.scene]||S.scene;
+  const dest=[['sebo',1],['capelafora',S.flags.capela],['delegacia',S.flags.dp],['redacao',S.flags.ligacao],['casafora',S.flags.ligacao]];
+  let h=`<div class="title" style="font-size:26px">TÁXI DO SEU VALDIR</div><p>Seu Valdir, ao volante do Opala: "Pra onde, doutor? Corrida é CR$ 2.000."</p><p style="font-size:26px;color:#f0d060">Você tem CR$ ${S.cr.toLocaleString('pt-BR')}</p>`;
+  dest.forEach(([k,ok])=>{if(ok)h+=`<div class="btn" data-k="${k}" style="${k===here?'opacity:.4':''}">${LOCS[k].toUpperCase()}${k===here?' (AQUI)':''}</div>`});
+  h+=`<div class="btn small" data-k="x">FICAR AQUI</div>`;
+  let k;while(true){k=await overlay(h,'rua');if(k!==here)break}
+  closeOv();
+  if(k!=='x'){SFX.fx('taxi',.6);if(S.cr>=2000){S.cr-=2000;drawHud();await fadeTo(k)}else{await say(null,'Seu Valdir: "Tá liso, né? Vai fiado. Depois acerta."');await fadeTo(k)}}
+  busy=false;salvar()};
+$('#bhint').onclick=e=>{e.stopPropagation();document.querySelectorAll('.hs,.spr.npc').forEach(x=>x.classList.add('flash'));setTimeout(()=>document.querySelectorAll('.flash').forEach(x=>x.classList.remove('flash')),1500)};
+$('#bsnd').onclick=e=>{e.stopPropagation();SFX.init();SFX.mute();$('#bsnd').textContent=SFX.on?'SOM':'MUDO'};
+
+$('#bhome').onclick=e=>{e.stopPropagation();if(busy||dlgResolve)return;salvar();inicio()};
+$('#bfs').onclick=e=>{e.stopPropagation();if(document.fullscreenElement){document.exitFullscreen&&document.exitFullscreen()}else telaCheia()};
+document.addEventListener('fullscreenchange',()=>setTimeout(fit,100));
+for(let i=0;i<6;i++){const im=new Image();im.src=IMG('gw'+i)}['nori0','nori1','nori2','tiana2'].forEach(n=>{const im=new Image();im.src=IMG(n)});
+const PASSEIO={nori:{min:60,max:350,walk:['nori1','nori0'],rest:()=>Math.random()<.55?'nori2':'nori0',v:.09},
+  tiana:{min:200,max:640,walk:['tiana2','tiana0'],rest:()=>Math.random()<.3?'tiana1':'tiana0',v:.16}};
+const andando={};
+setInterval(()=>{if(!S||S.scene!=='sebo'||busy||dlgResolve||$('#ov').classList.contains('on'))return;
+  for(const id in PASSEIO){if(andando[id]||Math.random()>.3)continue;passear(id)}},2500);
+async function passear(id){const P=PASSEIO[id],el=document.querySelector(`.spr[data-id="${id}"]`);if(!el)return;andando[id]=1;
+  const x0=parseFloat(el.style.left),x1=P.min+Math.random()*(P.max-P.min),dir=x1>x0?1:-1,t0=performance.now(),dur=Math.abs(x1-x0)/P.v;let n=0;
+  const tm=setInterval(()=>{el.src=IMG(P.walk[n++%2])},id==='tiana'?150:210);
+  await new Promise(res=>{const st=now=>{if(!el.isConnected){res();return}const k=Math.min(1,(now-t0)/dur);el.style.left=(x0+(x1-x0)*k)+'px';el.style.transform=`translateX(-50%) scaleX(${dir})`;if(k<1)requestAnimationFrame(st);else res()};requestAnimationFrame(st)});
+  clearInterval(tm);if(el.isConnected){const r=P.rest();el.src=IMG(r);if(r==='tiana1'){SFX.bark();setTimeout(()=>{if(el.isConnected)el.src=IMG('tiana0')},700)}if(el._t)el._t.x=x1}
+  andando[id]=0}
+const PL={1:['Folha arrancada do livro de vendas','Sebo: olhe o livro de vendas no balcão'],2:['Nota fiscal: "Capela dos Aflitos, 3 batidas"','Sebo: dê um petisco ao Nori'],3:['A sombra do enforcado na foto da Helena','Vem junto com a nota fiscal'],
+ 4:['Bilhete: "O último Medeiros paga a corda. 20/9"','Capela: fale com a Dona Marlene levando a nota fiscal'],5:['Laudo: corda com mais de 150 anos','Delegacia: olhe o arquivo de aço durante a distração do Pedro'],6:['As 4 vítimas compraram livros sobre o Largo da Forca','Delegacia: olhe o mural durante a distração do Pedro'],
+ 7:['Caderno de 1954 do vô José Marcelino','Porão: olhe as caixas de livros'],8:['Três nós e MEDEIROS 1821 na parede','Porão: use a vela acesa na parede do fundo'],9:['Recorte de 1954: Antônio Medeiros enforcado','Redação do NP: fale com a Helena'],
+ 10:['Cartas do carrasco Joaquim Medeiros','Baú: olhe as cartas'],11:['Diário do vô: a Irmandade quer o último Medeiros','Baú: olhe o diário'],12:['Retrato de Joaquim Medeiros, 1821','Baú: olhe o retrato'],13:['Pedaço da corda original','Baú: pegue a corda']};
+$('#pistas').onclick=async e=>{e.stopPropagation();if(busy||dlgResolve)return;busy=true;
+  let h=`<div class="title" style="font-size:22px">PISTAS ${S.pistas.length}/${PISTAS}</div><div style="text-align:left;font-size:25px;line-height:1.15;max-width:900px;margin:14px auto">`;
+  for(let i=1;i<=PISTAS;i++){const ok=S.pistas.includes(i);h+=`<div style="color:${ok?'#e8e2c8':'#7d8794'}">${ok?'✔':'?'} ${i}. ${ok?PL[i][0]:'Falta — dica: '+PL[i][1]}</div>`}
+  h+=`</div><div class="btn" data-k="x">FECHAR</div>`;await overlay(h,null);closeOv();busy=false};
+/* sussurros de sanidade baixa */
+const WH=['...Medeiros...','a corda...','três nós','vinte de setembro','você é o último','perdão...'];
+setInterval(()=>{if(!S||S.san>4||$('#ov').classList.contains('on'))return;const nw=Date.now();if(!window._sus||nw-window._sus>26000){window._sus=nw;SFX.play('sussurros',.22)}const w=$('#whisper');w.textContent=WH[Math.random()*WH.length|0];w.style.left=(80+Math.random()*700)+'px';w.style.top=(150+Math.random()*350)+'px';w.style.opacity=1;setTimeout(()=>w.style.opacity=0,1400)},6500);
+
+/* final */
+async function final(){
+  const f=$('#fade');f.style.opacity=1;await sleep(600);
+  await narr('A vela apaga sozinha.');
+  SFX.knock();await sleep(1800);
+  await narr('No escuro, três batidas. Vindas de dentro da parede.');
+  SFX.ring();await sleep(2500);
+  await narr('Lá em cima, o telefone toca.');
+  await say('izabel','Guilherme, meu neto? É a vó. Seu avô José Marcelino me fez prometer: quando as mortes começassem, eu te entregaria o baú dele.');
+  await say('izabel','Elas começaram, não foi? Vem pra Praia Grande. Hoje.');
+  SFX.bell();
+  S.flags.ligacao=1;salvar();
+  await narr('Redação do Notícias Populares e Praia Grande liberadas no táxi do Seu Valdir.');
+  await fadeTo('sebo');
+}
+async function fimCap1(){
+  await sleep(600);SFX.ring();await sleep(2300);
+  await narr('O telefone da sala toca. A vó atende e te passa o fone, pálida.');
+  await say('nathalia','Guilherme! Levaram o Pedro! Arrombaram o sebo e deixaram três nós desenhados na porta!');
+  await G('Vinte de setembro... eles querem o último Medeiros. E vão usar o Pedro pra me buscar.');
+  SFX.bell();S.flags.fim=1;salvar();SFX.amb('musica');
+  await overlay(`<div class="title">FIM DO<br>CAPÍTULO 1</div><div class="sub">A Corda que Não Arrebenta</div>
+    <p>Pistas: ${S.pistas.length}/${PISTAS} · Vida: ${S.vida}/10 · Sanidade: ${S.san}/10</p>
+    <p style="font-size:28px;color:#d9c48a">Capítulo 2: O Subterrâneo — em breve</p>
+    <div class="btn" data-k="n">VOLTAR AO INÍCIO</div>`,'bauaberto');
+  try{localStorage.removeItem('pecados_v1')}catch(e){}
+  closeOv();inicio();
+}
+
+/* trovões */
+let trovT=null;
+function trovoada(c){clearTimeout(trovT);$('#raio').style.display='none';if(!c.trovao)return;
+  if(c.raio){$('#raio').src=IMG(c.raio)}
+  const loop=()=>{trovT=setTimeout(async()=>{if(cur()!==c)return;await relampago(c);loop()},7000+Math.random()*9000)};loop()}
+async function relampago(c){const w=$('#flashw'),r=$('#raio');const on=v=>{w.style.opacity=v;if(c.raio)r.style.display=v>0?'block':'none'};
+  on(.55);await sleep(70);on(0);await sleep(90);on(.35);await sleep(140);on(0);
+  await sleep(500+Math.random()*900);trovao();
+  if(Math.random()<.4&&($('#f1')||document.querySelector('.spr[data-id="tiana"]'))){await sleep(400);SFX.bark();latir()}}
+function trovao(){const x=SFX;if(!x.ctx)return;const c=x.ctx,src=c.createBufferSource(),len=3.5;const b=c.createBuffer(1,c.sampleRate*len,c.sampleRate),d=b.getChannelData(0);let v=0;for(let i=0;i<d.length;i++){v=v*.97+(Math.random()*2-1)*.3;d[i]=v}
+  src.buffer=b;const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=180;const g=c.createGain();g.gain.setValueAtTime(0,c.currentTime);g.gain.linearRampToValueAtTime(1.6,c.currentTime+.08);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+len);src.connect(f).connect(g).connect(x.master);src.start()}
+
+/* cadeado */
+function cadeado(){return new Promise(res=>{const d=[0,0,0,0];
+  const html=()=>`<div class="title" style="font-size:24px">CADEADO DO BAÚ</div><p>"A data que condena os Medeiros"</p>
+   <div style="display:flex;gap:18px;justify-content:center;margin:18px 0">${d.map((n,i)=>`<div style="display:flex;flex-direction:column;gap:6px"><div class="btn small" style="min-width:80px;margin:0" data-u="${i}">▲</div><div style="font-family:'Press Start 2P';font-size:40px;color:#f0d060;background:#111;border:3px solid #556;padding:14px 10px;text-align:center">${n}</div><div class="btn small" style="min-width:80px;margin:0" data-d="${i}">▼</div></div>`).join('')}</div>
+   <div style="display:flex;gap:10px;justify-content:center"><div class="btn" data-ok="1" style="min-width:200px">ABRIR</div><div class="btn" data-x="1" style="min-width:200px">DESISTIR</div></div>`;
+  const o=$('#ov');$('#ovbg').style.backgroundImage=`url(${IMG('sala')})`;o.classList.add('on');
+  const draw=()=>{$('#ovc').innerHTML=html();
+    $('#ovc').querySelectorAll('[data-u]').forEach(b=>b.onclick=e=>{e.stopPropagation();d[b.dataset.u]=(d[b.dataset.u]+1)%10;SFX.tone(800,.04,'square',.05);draw()});
+    $('#ovc').querySelectorAll('[data-d]').forEach(b=>b.onclick=e=>{e.stopPropagation();d[b.dataset.d]=(d[b.dataset.d]+9)%10;SFX.tone(700,.04,'square',.05);draw()});
+    $('#ovc').querySelector('[data-ok]').onclick=e=>{e.stopPropagation();closeOv();res(d.join(''))};
+    $('#ovc').querySelector('[data-x]').onclick=e=>{e.stopPropagation();closeOv();res(null)}};draw()})}
+
+/* início */
+async function inicio(){
+  fit();SFX.amb('musica');
+  const sv=carregar();
+  const k=await overlay(`<div class="title">OS PECADOS<br>DA FORCA</div><div class="sub">São Paulo, 1994 · Capítulo 1 · Demo</div>
+    ${sv&&!sv.flags.fim?'<div class="btn" data-k="c">CONTINUAR</div>':''}<div class="btn" data-k="n">NOVO JOGO</div>
+    <p style="font-size:22px;color:#8a96a3;margin-top:24px">Melhor com som e com o celular deitado.</p>`,'rua');
+  SFX.init();SFX.amb(S&&S.scene&&SC[S.scene].amb||'chuva-dentro');closeOv();
+  if(k==='c'){S=sv;S._keepG=1;}else{S=novo();}
+  const f=$('#fade');f.style.opacity=1;
+  await fadeTo(S.scene);
+}
+inicio();
+if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
+</script>
+</body>
+</html>
