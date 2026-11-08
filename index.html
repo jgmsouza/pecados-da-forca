@@ -16,7 +16,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#e8e2c8;--gold:#f0d060;--stone:#2a3340;--stone2:#3d4a5a;--edge:#7d8ea0;--dark:#0b0d12}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+img{-webkit-user-drag:none}
 html,body{margin:0;height:100%;background:#000;overflow:hidden;touch-action:manipulation}
 body{font-family:'VT323',monospace;color:var(--ink)}
 #stage{position:absolute;left:0;top:0;transform-origin:0 0;background:var(--dark);image-rendering:pixelated}
@@ -93,11 +94,11 @@ body{font-family:'VT323',monospace;color:var(--ink)}
 .btn.small{font-size:11px;padding:10px 6px}
 #inv{background:#0c0f14;border:4px solid var(--stone2);padding:8px;display:grid;gap:6px;position:relative}
 #inv h4{position:absolute;top:-2px;left:0;right:0;margin:0;text-align:center;font-family:'Press Start 2P';font-size:11px;color:var(--ink);transform:translateY(-120%)}
-#stage.side #inv{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:78px;margin-top:26px;flex:none}
+#stage.side #inv{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,78px);grid-auto-rows:78px;height:262px;align-content:start;margin-top:26px;flex:none;contain:layout size}
 #stage.bottom #inv{grid-template-columns:repeat(5,72px);grid-auto-rows:72px;margin-left:auto;margin-top:22px}
-.slot{background:#1e1f24;border:2px solid #2c333d;min-width:0;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:4px}
+.slot{background:#1e1f24;border:2px solid #2c333d;min-width:0;min-height:0;height:78px;box-sizing:border-box;overflow:hidden;-webkit-touch-callout:none;-webkit-user-drag:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:4px}
 .slot img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;pointer-events:none}
-.slot.sel{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+.slot.sel{border-color:var(--gold);box-shadow:inset 0 0 0 2px var(--gold)}
 #tools{display:flex;gap:8px}
 #stage.side #tools{margin-top:auto;flex:none}
 #stage.bottom #tools{flex-direction:column;width:130px}
@@ -132,7 +133,7 @@ body{font-family:'VT323',monospace;color:var(--ink)}
     <div id="whisper"></div>
     <div id="sentence"></div>
     <div id="toast"></div>
-    <div id="choices" style="position:absolute;left:60px;right:60px;bottom:24px;display:none;flex-direction:column;gap:8px;z-index:18"></div>
+    <div id="choices" style="position:absolute;left:50%;transform:translateX(-50%);bottom:30px;width:640px;display:none;flex-direction:column;gap:5px;z-index:18;background:rgba(8,10,14,.88);border:3px solid #3d4a5a;padding:8px"></div>
     <div id="dlg"><div id="por"></div><div id="dtext"><div id="dname"></div><div id="dline"></div></div><div id="dmore">▼</div></div>
     <div id="fade"></div>
   </div>
@@ -220,7 +221,7 @@ const VERBS=[['andar','ANDAR'],['olhar','OLHAR'],['pegar','PEGAR'],['falar','FAL
 let verb='andar',selItem=null,busy=false;
 function drawVerbs(){const v=$('#verbs');v.innerHTML='';VERBS.forEach(([k,l])=>{const b=document.createElement('div');b.className='btn'+(verb===k?' sel':'');b.textContent=l;b.onclick=()=>{if(busy)return;verb=k;selItem=null;drawVerbs();drawInv();sentence()};v.appendChild(b)})}
 function drawInv(){const v=$('#inv');v.querySelectorAll('.slot').forEach(e=>e.remove());const n=$('#stage').classList.contains('side')?9:10;
-  for(let i=0;i<n;i++){const s=document.createElement('div');s.className='slot';const it=S.inv[i];if(it){const im=new Image();im.src=IMG(ICON[it]);s.appendChild(im);if(selItem===it)s.classList.add('sel');s._item=it;s.onpointerdown=e=>startDrag(e,it,s)}v.appendChild(s)}}
+  for(let i=0;i<n;i++){const s=document.createElement('div');s.className='slot';const it=S.inv[i];if(it){const im=new Image();im.src=IMG(ICON[it]);im.draggable=false;im.alt='';s.appendChild(im);if(selItem===it)s.classList.add('sel');s._item=it;s.onpointerdown=e=>startDrag(e,it,s)}v.appendChild(s)}}
 function drawHud(){const seg=(el,n,c)=>{el.innerHTML='';for(let i=0;i<10;i++){const d=document.createElement('div');d.className='seg '+(i<n?c:'off');el.appendChild(d)}};
   seg($('#mv'),S.vida,'v');seg($('#ms'),S.san,'s');
   $('#money').innerHTML=`<img src="${IMG('i_dinheiro')}">CR$ ${S.cr.toLocaleString('pt-BR')}`;
@@ -237,7 +238,7 @@ function passarFala(e){if(!dlgResolve)return;if(e){e.stopPropagation();e.prevent
 document.addEventListener('click',e=>{if(dlgResolve&&!$('#ov').classList.contains('on'))passarFala(e)},true);
 let dq=Promise.resolve();
 function escolha(ops){return dq=dq.then(()=>new Promise(res=>{const c=$('#choices');c.innerHTML='';
-  ops.forEach((t,i)=>{const b=document.createElement('div');b.className='btn';b.style.cssText='text-align:left;font-family:VT323,monospace;font-size:28px;padding:10px 16px;text-shadow:none';b.textContent=(i+1)+'. '+t;
+  ops.forEach((t,i)=>{const b=document.createElement('div');b.className='btn';b.style.cssText='text-align:left;font-family:VT323,monospace;font-size:21px;line-height:1.05;padding:5px 10px;text-shadow:none;border-width:2px';b.textContent=(i+1)+'. '+t;
     b.onclick=e=>{e.stopPropagation();c.style.display='none';c.innerHTML='';res(i)};c.appendChild(b)});c.style.display='flex'}))}
 function say(who,txt){dq=dq.then(()=>show(who,txt));return dq}
 function show(who,txt){let held=null;const pa=portAnim(who,txt);if(who){anim(who);const el=document.querySelector(`.spr[data-id="${who}"]`);if(el&&el._anim){held=el;el._hold=ANIMS[el._anim].talk;el.src=IMG(el._hold)}}
