@@ -591,7 +591,7 @@ let nathPose='sit';
 async function runAnim(el){await sleep(Math.random()*1200);while(el.isConnected){for(const [f,ms] of ANIMS[el._anim].seq()){if(!el.isConnected)return;el.src=IMG(el._hold||f);await sleep(ms)}}}
 ['sala_raio'].concat(...Object.values(ANIMS).map(a=>a.seq().map(x=>x[0])),['nr0','nr1','nr2','nr3','nr5','nr6','nr7','ta0','ta1','ta2','ta3','ta5','ta6','ta7','tl4','tl5','tl6']).forEach(n=>{const im=new Image();im.src=IMG(n)});
 /* retratos animados */
-const PORT={guilherme:{base:'pg0',blink:['pg1'],talk:['pg2','pg3','pg2','pg0','pg3','pg2','pg0']}};
+const PORT={guilherme:{base:'pg0',blink:['pg1'],talk:['pg2','pg3','pg2','pg0','pg3','pg2','pg0']},joana:{base:'pj0',blink:['pj1'],talk:['pj2','pj3','pj2','pj0','pj3','pj2','pj0']}};
 Object.values(PORT).forEach(p=>[p.base,...p.blink,...p.talk].forEach(n=>{const im=new Image();im.src=IMG(n)}));
 function portAnim(who,txt){const P=PORT[who];if(!P)return()=>{};const el=$('#por');let alive=true;
   const names=[...new Set([P.base,...P.blink,...P.talk])];let imgs=[];const set=n=>{if(!alive)return;imgs.forEach(i=>i.style.visibility=i.dataset.n===n?'visible':'hidden')};
