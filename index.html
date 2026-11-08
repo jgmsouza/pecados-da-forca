@@ -237,7 +237,7 @@ let dq=Promise.resolve();
 function say(who,txt){dq=dq.then(()=>show(who,txt));return dq}
 function show(who,txt){let held=null;const pa=portAnim(who,txt);if(who){anim(who);const el=document.querySelector(`.spr[data-id="${who}"]`);if(el&&el._anim){held=el;el._hold=ANIMS[el._anim].talk;el.src=IMG(el._hold)}}
   return new Promise(r0=>{const res=()=>{if(held)held._hold=null;pa();r0()};const d=$('#dlg');d.classList.toggle('narr',!who);const p=$('#por');
-  if(who&&['guilherme','nathalia','pedro','sarah','helena','marlene','plantonista','izabel'].includes(who)){p.className='';p.style.backgroundImage=`url(${IMG('p_'+who)})`}else p.className='none';
+  p.innerHTML='';if(who&&['guilherme','nathalia','pedro','sarah','helena','marlene','plantonista','izabel'].includes(who)){p.className='';p.style.backgroundImage=`url(${IMG('p_'+who)})`}else p.className='none';
   $('#dname').textContent=who?PERS[who]:'';$('#dname').style.display=who?'block':'none';$('#dline').textContent=who?'"'+txt+'"':txt;d.classList.add('on');dlgResolve=res})}
 const narr=t=>say(null,t);
 const G=t=>say('guilherme',t);
@@ -555,10 +555,11 @@ async function runAnim(el){await sleep(Math.random()*1200);while(el.isConnected)
 /* retratos animados */
 const PORT={guilherme:{base:'pg0',blink:['pg1'],talk:['pg2','pg3','pg2','pg0','pg3','pg2','pg0']}};
 Object.values(PORT).forEach(p=>[p.base,...p.blink,...p.talk].forEach(n=>{const im=new Image();im.src=IMG(n)}));
-function portAnim(who,txt){const P=PORT[who];if(!P)return()=>{};const el=$('#por');let alive=true;const set=n=>{if(alive)el.style.backgroundImage=`url(${IMG(n)})`};
-  (async()=>{await sleep(30);const end=performance.now()+Math.min(3200,txt.length*48);let i=0;while(alive&&performance.now()<end){set(P.talk[i++%P.talk.length]);await sleep(140)}set(P.base);
+function portAnim(who,txt){const P=PORT[who];if(!P)return()=>{};const el=$('#por');let alive=true;
+  const names=[...new Set([P.base,...P.blink,...P.talk])];let imgs=[];const set=n=>{if(!alive)return;imgs.forEach(i=>i.style.visibility=i.dataset.n===n?'visible':'hidden')};
+  (async()=>{await sleep(0);if(!alive)return;el.innerHTML=names.map(n=>`<img data-n="${n}" src="${IMG(n)}" style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;visibility:${n===P.base?'visible':'hidden'}">`).join('');el.style.position='relative';imgs=[...el.querySelectorAll('img')];await sleep(30);const end=performance.now()+Math.min(3200,txt.length*48);let i=0;while(alive&&performance.now()<end){set(P.talk[i++%P.talk.length]);await sleep(140)}set(P.base);
     while(alive){await sleep(2200+Math.random()*2800);if(!alive)break;for(const f of P.blink){set(f);await sleep(120)}set(P.base)}})();
-  return()=>{alive=false}}
+  return()=>{alive=false;el.innerHTML=''}}
 /* Guilherme parado: gestos */
 const GANC={gia:.535,gib:.578,gic:.571};let gTok=0;
 const GSEQ={
