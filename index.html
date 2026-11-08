@@ -474,7 +474,7 @@ SC.sala={amb:'casa-vo',img:'sala',base:687,gh:400,range:[230,680],start:320,foll
   sprites:()=>[{id:'izabel',img:'izabel',x:560,y:635,h:330}],
   exits:[{l:'Sair',r:[0,560,140,127],to:'casafora'}],
   hots:[
-    {l:'Retratos da família',r:[5,55,245,185],x:250,olhar:'Os Medeiros. O vô José Marcelino, a vó Maria Izabel jovem... e um homem que ninguém sabe dizer quem é.'},
+    {l:'Retratos da família',r:[5,55,245,185],x:250,olhar:async()=>{await narr('Os Medeiros. O vô José Marcelino, a vó Maria Izabel jovem... e um homem que ninguém sabe dizer quem é.');await narr('Atrás do retrato do vô, a letra dele a lápis: "20-09. Nunca esquecer."');S.flags.dica2009=1}},
     {l:'Relógio',r:[255,120,50,130],olhar:'Parado nas 3h. Desde 1954, diz a vó.'},
     {l:'Abajur',r:[365,255,65,125],olhar:'A única luz quente da casa.'},
     {l:'Sofá',r:[0,300,470,300],x:300,olhar:'Sofá com capa de plástico. Clássico de vó.',usar:'Sentar agora? Com esse baú me encarando?'},
@@ -494,7 +494,7 @@ SC.sala={amb:'casa-vo',img:'sala',base:687,gh:400,range:[230,680],start:320,foll
 async function rezar(){if(S.san>=10||S.flags.rezou)return;S.flags.rezou=1;await say('izabel','Vem cá, meu neto. Deixa a vó rezar por você. Você está com os olhos de quem viu coisa.');SFX.bell();await narr('Ela segura suas mãos com o terço e reza baixinho. O peito fica mais leve.');S.san=Math.min(10,S.san+4);drawHud();toast('SANIDADE +4')}
 async function abrirBau(){if(S.flags.bauAberto)return fadeTo('bau');
   const c=await cadeado();if(c===null)return;
-  if(c!=='2009'){SFX.tone(140,.25,'square',.12);await narr(`${c}... o cadeado não abre.`);if(S.flags.recorte||has('bilhete'))await G('A data que condena os Medeiros... dia e mês.');return}
+  if(c!=='2009'){SFX.tone(140,.25,'square',.12);S.flags.errosBau=(S.flags.errosBau||0)+1;await narr(`${c}... o cadeado não abre.`);if(S.flags.errosBau>=2)await G('Quatro números... dia e mês. Dois dígitos pro dia, dois pro mês.');else await G('A data que condena os Medeiros... dia e mês.');if(S.flags.errosBau>=3&&!S.flags.dica2009)await say('izabel','Seu avô escreveu alguma coisa atrás do retrato dele, ali na parede. Dá uma olhada.');return}
   SFX.fx('bau');await narr('2-0-0-9. Vinte do nove. O cadeado se abre com um estalo.');S.flags.bauAberto=1;await fadeTo('bau')}
 SC.bau={amb:'casa-vo',img:'bauaberto',noWalk:1,
   exits:[{l:'Fechar',r:[0,580,170,107],to:'sala'}],
