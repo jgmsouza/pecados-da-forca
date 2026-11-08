@@ -553,11 +553,11 @@ const ANIMS={
 async function runAnim(el){await sleep(Math.random()*1200);while(el.isConnected){for(const [f,ms] of ANIMS[el._anim].seq()){if(!el.isConnected)return;el.src=IMG(el._hold||f);await sleep(ms)}}}
 ['izabel','helena','sala_raio','ns0','ns1','ns2','ns3','pd0','pd1','pd2','pd3','pd4','pd5'].forEach(n=>{const im=new Image();im.src=IMG(n)});
 /* retratos animados */
-const PORT={guilherme:{base:'pg0',blink:['pg1','pg4','pg1'],talk:['pg2','pg0','pg3','pg2','pg0']}};
+const PORT={guilherme:{base:'pg0',blink:['pg1'],talk:['pg2','pg3','pg2','pg0','pg3','pg2','pg0']}};
 Object.values(PORT).forEach(p=>[p.base,...p.blink,...p.talk].forEach(n=>{const im=new Image();im.src=IMG(n)}));
 function portAnim(who,txt){const P=PORT[who];if(!P)return()=>{};const el=$('#por');let alive=true;const set=n=>{if(alive)el.style.backgroundImage=`url(${IMG(n)})`};
   (async()=>{await sleep(30);const end=performance.now()+Math.min(3200,txt.length*48);let i=0;while(alive&&performance.now()<end){set(P.talk[i++%P.talk.length]);await sleep(140)}set(P.base);
-    while(alive){await sleep(2200+Math.random()*2800);if(!alive)break;for(const f of P.blink){set(f);await sleep(70)}set(P.base)}})();
+    while(alive){await sleep(2200+Math.random()*2800);if(!alive)break;for(const f of P.blink){set(f);await sleep(120)}set(P.base)}})();
   return()=>{alive=false}}
 /* Guilherme parado: gestos */
 const GANC={gia:.535,gib:.578,gic:.571};let gTok=0;
