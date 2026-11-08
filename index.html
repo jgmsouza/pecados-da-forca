@@ -132,6 +132,7 @@ body{font-family:'VT323',monospace;color:var(--ink)}
     <div id="whisper"></div>
     <div id="sentence"></div>
     <div id="toast"></div>
+    <div id="choices" style="position:absolute;left:60px;right:60px;bottom:24px;display:none;flex-direction:column;gap:8px;z-index:18"></div>
     <div id="dlg"><div id="por"></div><div id="dtext"><div id="dname"></div><div id="dline"></div></div><div id="dmore">▼</div></div>
     <div id="fade"></div>
   </div>
@@ -185,18 +186,19 @@ const ITEMS={
   nota:{n:'Nota fiscal',d:'Venda do Crônicas do Largo da Forca para Otávio Lins. No verso, a lápis: "Capela dos Aflitos, 3 batidas".'},
   vela:{n:'Vela',d:'Vela branca da Capela dos Aflitos. Apagada.'},
   bilhete:{n:'Bilhete antigo',d:'Papel amarelado: "O último Medeiros paga a corda. 20/9". A letra parece a do vô José Marcelino.'},
-  isqueiro:{n:'Isqueiro',d:'Zippo do Ayrton. Peguei emprestado. Pra sempre.'},
-  recorte:{n:'Recorte de 1954',d:'Notícias Populares, 21/9/1954: "Antônio Medeiros achado enforcado. Três nós a carvão ao lado do corpo." O irmão do vô José Marcelino.'},
+  isqueiro:{n:'Isqueiro',d:'Zippo do André. Peguei emprestado. Pra sempre.'},
+  recorte:{n:'Recorte de 1954',d:'Achado na boca do Otávio. Notícias Populares, 21/9/1954: "Antônio Medeiros achado enforcado. Três nós a carvão ao lado do corpo." O irmão do vô José Marcelino.'},
   corda:{n:'Pedaço de corda',d:'Cânhamo velho, duro como osso. Tem mais de 150 anos.'},
   velaacesa:{n:'Vela acesa',d:'A chama não treme nem com o vento. Isso não é normal.'}
 };
 const ICON={petisco:'i_petisco',nota:'i_nota',vela:'i_vela',bilhete:'i_bilhete',isqueiro:'i_isqueiro',velaacesa:'i_velaacesa',recorte:'i_nota',corda:'i_corda'};
-const PERS={guilherme:'Guilherme',nathalia:'Nathalia',pedro:'Pedro',sarah:'Sarah',helena:'Helena',marlene:'Dona Marlene',plantonista:'Ayrton',izabel:'Vó Maria Izabel',valdir:'Seu Valdir'};
+const PERS={guilherme:'Guilherme',nathalia:'Nathalia',pedro:'Pedro',sarah:'Mestra Sarah',helena:'Dra. Helena',joana:'Delegada Joana',andre:'André',izabel:'Vó Maria Izabel',valdir:'Seu Valdir'};
 const PISTAS=13;
-const LOCS={sebo:'Sebo Medeiros',capelafora:'Capela dos Aflitos',delegacia:'1º DP',redacao:'Redação do NP',casafora:'Praia Grande'};
+const LOCS={sebo:'Sebo Medeiros',capelafora:'Capela dos Aflitos',delegacia:'1º DP',redacao:'IML',casafora:'Praia Grande'};
 
 let S=null; // estado
-function novo(){return{scene:'abertura',gx:null,flags:{},inv:[],vida:10,san:10,cr:10000,pistas:[],cp:null}}
+function novo(){return{scene:'abertura',gx:null,flags:{},inv:[],vida:10,san:10,cr:10000,pistas:[],cp:null,rel:{}}}
+function rel(who,n){S.rel=S.rel||{};S.rel[who]=(S.rel[who]||0)+n;toast(n>0?(PERS[who]||who).toUpperCase()+' GOSTOU DISSO':(PERS[who]||who).toUpperCase()+' NÃO GOSTOU',1600)}
 function salvar(){try{localStorage.setItem('pecados_v1',JSON.stringify(S))}catch(e){}}
 function carregar(){try{const j=localStorage.getItem('pecados_v1');return j?JSON.parse(j):null}catch(e){return null}}
 
@@ -224,7 +226,7 @@ function drawHud(){const seg=(el,n,c)=>{el.innerHTML='';for(let i=0;i<10;i++){co
   $('#money').innerHTML=`<img src="${IMG('i_dinheiro')}">CR$ ${S.cr.toLocaleString('pt-BR')}`;
   $('#pistas').textContent=`PISTAS ${S.pistas.length}/${PISTAS} (VER)`;
   $('#scene').classList.toggle('lowsan',S.san<=4);
-  const t=$('#timer');if(S.scene==='delegacia'&&S.flags.distr>0){t.style.display='block';t.textContent=`AYRTON VOLTA EM ${S.flags.distr}`}else t.style.display='none';
+  const t=$('#timer');if(S.scene==='delegacia'&&S.flags.distr>0){t.style.display='block';t.textContent=`ANDRÉ VOLTA EM ${S.flags.distr}`}else t.style.display='none';
 }
 function sentence(hs){const v=VERBS.find(x=>x[0]===verb)[1];let t=v;if(selItem)t+=' '+ITEMS[selItem].n.toUpperCase()+' COM';if(hs)t+=' '+hs.toUpperCase();$('#sentence').textContent=(verb==='andar'&&!hs)?'':t}
 function toast(t,ms=1800){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',ms)}
@@ -234,10 +236,13 @@ let dlgResolve=null;
 function passarFala(e){if(!dlgResolve)return;if(e){e.stopPropagation();e.preventDefault()}const r=dlgResolve;dlgResolve=null;$('#dlg').classList.remove('on');r()}
 document.addEventListener('click',e=>{if(dlgResolve&&!$('#ov').classList.contains('on'))passarFala(e)},true);
 let dq=Promise.resolve();
+function escolha(ops){return dq=dq.then(()=>new Promise(res=>{const c=$('#choices');c.innerHTML='';
+  ops.forEach((t,i)=>{const b=document.createElement('div');b.className='btn';b.style.cssText='text-align:left;font-family:VT323,monospace;font-size:28px;padding:10px 16px;text-shadow:none';b.textContent=(i+1)+'. '+t;
+    b.onclick=e=>{e.stopPropagation();c.style.display='none';c.innerHTML='';res(i)};c.appendChild(b)});c.style.display='flex'}))}
 function say(who,txt){dq=dq.then(()=>show(who,txt));return dq}
 function show(who,txt){let held=null;const pa=portAnim(who,txt);if(who){anim(who);const el=document.querySelector(`.spr[data-id="${who}"]`);if(el&&el._anim){held=el;el._hold=ANIMS[el._anim].talk;el.src=IMG(el._hold)}}
   return new Promise(r0=>{const res=()=>{if(held)held._hold=null;pa();r0()};const d=$('#dlg');d.classList.toggle('narr',!who);const p=$('#por');
-  p.innerHTML='';if(who&&['guilherme','nathalia','pedro','sarah','helena','marlene','plantonista','izabel'].includes(who)){p.className='';p.style.backgroundImage=`url(${IMG('p_'+who)})`}else p.className='none';
+  p.innerHTML='';if(who&&['guilherme','nathalia','pedro','sarah','helena','joana','andre','izabel'].includes(who)){p.className='';p.style.backgroundImage=`url(${IMG('p_'+who)})`}else p.className='none';
   $('#dname').textContent=who?PERS[who]:'';$('#dname').style.display=who?'block':'none';$('#dline').textContent=who?'"'+txt+'"':txt;d.classList.add('on');dlgResolve=res})}
 const narr=t=>say(null,t);
 const G=t=>say('guilherme',t);
@@ -255,32 +260,35 @@ function flashRed(){const f=$('#fade');f.style.background='#600';f.style.opacity
 // rects em px na imagem 1024x687
 const SC={};
 SC.abertura={img:'sebo',f:'brightness(.62) saturate(.8)',base:687,gh:390,range:[150,860],start:230,rain:.08,
-  sprites:()=>S.flags.sarahIn?[{id:'sarah',img:'sarah',x:700,y:687,h:395,flip:1}]:[],
+  sprites:()=>S.flags.joanaIn?[{id:'joana',img:'job0',x:690,y:687,h:395,flip:1,anim:'joana'}]:[],
   hots:[
-    {l:'Porta da frente',r:[150,115,320,265],x:330,any:async()=>{await abrirSarah()},olhar:'A porta da frente fica ao lado da vitrine. Alguém bateu três vezes. À meia-noite.'},
+    {l:'Porta da frente',r:[150,115,320,265],x:330,any:async()=>{await abrirJoana()},olhar:'A porta da frente fica ao lado da vitrine. Alguém bateu três vezes. À meia-noite.'},
     {l:'Máquina de escrever',r:[135,400,75,50],olhar:'Página 213 do meu romance. Faz três semanas que ela não sai do lugar.',pegar:'Pesada demais. E eu nem estou escrevendo.'},
     {l:'Porta do porão',r:[895,265,129,390],olhar:'O porão. Desde que o vô José Marcelino morreu, ninguém desce lá.',andar:'Agora não. Tem alguém na porta da frente.',usar:'Agora não. Tem alguém na porta da frente.'}
   ],
-  npc:{sarah:{l:'Sarah',olhar:'Investigadora Sarah. Não sorri desde 1989, pelo jeito.',falar:'Ela está esperando a minha resposta.'}},
+  npc:{joana:{l:'Joana',olhar:'Delegada Joana. Distintivo no peito, arma na cintura e cara de quem dormiu duas horas.',falar:'Ela está esperando a minha resposta.'}},
   async enter(){if(!S.flags.intro){S.flags.intro=1;await narr('Centro de São Paulo. Setembro de 1994. Meia-noite e garoa.');await narr('Guilherme Medeiros encara a página 213 do romance que não anda.');SFX.knock();await sleep(1700);await narr('TOC. TOC. TOC.');await G('Quem bate num sebo à meia-noite?');await narr('Toque na porta da frente.')}}
 };
-async function abrirSarah(){
-  if(S.flags.sarahIn)return;
-  SFX.tone(220,.3,'triangle',.1);S.flags.sarahIn=1;renderSprites();
-  await say('sarah','Polícia Civil. Investigadora Sarah. Posso entrar? Já entrei.');
-  await narr('Ela joga em cima do balcão um livro molhado de garoa: Crônicas do Largo da Forca. A etiqueta é do Sebo Medeiros.');
-  await say('sarah','Otávio Lins. Quarta vítima. Corda no pescoço e três nós desenhados a carvão do lado do corpo.');
-  await say('sarah','Esse livro saiu daqui. O dono dele saiu do mundo. Me explica.');
-  await G('Eu vendo livros, investigadora. Não vendo mortes.');
-  await say('sarah','Então me diz quem vendeu esse. Você tem até amanhã à noite. Depois disso, o suspeito é você.');
-  S.flags.sarahIn=0;renderSprites();
+async function abrirJoana(){
+  if(S.flags.joanaIn)return;
+  SFX.fx('porta',.6);S.flags.joanaIn=1;renderSprites();
+  await say('joana','Polícia Civil. Delegada Joana, do 1º DP. Posso entrar? ...Já entrei. Desculpa.');
+  await narr('Ela coloca em cima do balcão um livro molhado de garoa: Crônicas do Largo da Forca. A etiqueta é do Sebo Medeiros.');
+  await say('joana','Otávio Lins. Quarta vítima. Corda no pescoço e três nós desenhados a carvão do lado do corpo.');
+  await say('joana','É o meu primeiro caso de homicídio e... esse livro saiu daqui. Me explica.');
+  const r=await escolha(['Calma, delegada. Senta, eu passo um café.','Eu vendo livros, delegada. Não vendo mortes.','Tem mandado? Então boa noite.']);
+  if(r===0){rel('joana',1);await G('Calma, delegada. Senta, eu passo um café.');await say('joana','Café não, obrigada. Quer dizer... um pouco. Sem açúcar.');await narr('Ela relaxa os ombros pela primeira vez.')}
+  else if(r===1){await G('Eu vendo livros, delegada. Não vendo mortes.');await say('joana','Foi o que os outros três livreiros disseram.')}
+  else{rel('joana',-1);await G('Tem mandado? Então boa noite.');await say('joana','Mandado eu consigo até amanhã. E aí a conversa vai ser lá na delegacia.')}
+  await say('joana','Me diz quem vendeu esse livro. Você tem até amanhã à noite. Senão o suspeito é você. Acho. Vou confirmar.');
+  S.flags.joanaIn=0;renderSprites();
   await narr('A porta bate. A garoa continua.');
   await fadeTo('sebo',async()=>{await narr('Na manhã seguinte...')});
 }
 SC.sebo={img:'sebo',f:'brightness(1.28) saturate(.85) contrast(.95)',base:687,gh:390,range:[150,880],start:260,rain:.04,
-  sprites:()=>{const a=[{id:'nathalia',img:'ns0',x:72,y:578,h:228,anim:'nath'},{id:'pedro',img:'pd0',x:858,y:687,h:375,anim:'pedro'}];
-    a.push({id:'nori',img:S.flags.noriVolta?'nori0':'nori2',x:110,y:640,h:72});
-    a.push({id:'tiana',img:'tiana0',x:290,y:660,h:98});return a},
+  sprites:()=>{const a=[NATHPOSE[nathPose],{id:'pedro',img:'pg_0',x:858,y:687,h:375,anim:'pedro'}];
+    a.push({id:'nori',img:S.flags.noriVolta?'nr0':'nr7',x:150,y:648,h:70});
+    a.push({id:'tiana',img:'ta6',x:330,y:668,h:118});return a},
   hots:[
     {l:'Vitrine',r:[150,115,320,265],x:330,olhar:'Garoa. Sempre garoa.',andar:async()=>{await narr('Para ir a outro lugar, chame o táxi do Seu Valdir (botão TÁXI).')}},
     {l:'Máquina de escrever',r:[135,400,75,50],olhar:'Página 213. Ainda.',pegar:'Pesada demais.'},
@@ -301,7 +309,7 @@ SC.sebo={img:'sebo',f:'brightness(1.28) saturate(.85) contrast(.95)',base:687,gh
   npc:{
     nathalia:{l:'Nathalia',olhar:'Nathalia. Lê latim melhor que eu leio cardápio.',
       falar:async()=>{if(!S.flags.nota){await say('nathalia','Alguém arrancou a folha do dia da venda. E não fui eu.');await say('nathalia','Mas eu vi um papel caindo debaixo da estante baixa. Só o Nori passa naquele vão.');await G('E o Nori só trabalha com pagamento adiantado.')}
-        else if(!has('velaacesa')){await say('nathalia','Capela dos Aflitos... minha avó ia lá pedir pro Chaguinhas. Batia três vezes na porta.');await say('nathalia','Se o porão estiver escuro, leva fogo. A luz de lá queimou faz meses.')}
+        else if(!has('velaacesa')){await say('nathalia','Capela dos Aflitos, no Largo da Forca... do lado tem a academia da mestra Sarah. Dizem que ela cuida dos bilhetes da capela.');await say('nathalia','Se o porão estiver escuro, leva fogo. A luz de lá queimou faz meses.')}
         else await say('nathalia','Vai descer no porão? Leva a Tiana. Ela sente essas coisas.')},
       usar:async it=>{if(it==='nota')return say('nathalia','"3 batidas"... é o pedido da Capela dos Aflitos.');if(it==='bilhete'){await say('nathalia','Essa letra... é a mesma das anotações do seu avô nos livros do porão.');return}return say('nathalia','Não sei o que fazer com isso.')}},
     pedro:{l:'Pedro',olhar:'Pedro, o estagiário. Walkman no pescoço, chave na mão, culpa na cara.',
@@ -328,10 +336,10 @@ async function noriBusca(){
   await pista(2,'o livro foi vendido pelo Pedro, e o comprador ia para a Capela dos Aflitos.');
   await sleep(300);SFX.ring();await sleep(2300);
   await narr('O telefone do balcão toca.');
-  await say('helena','Guilherme? Helena, do Notícias Populares. Revelei o filme da cena do crime do Otávio.');
-  await say('helena','Tem alguém na foto que não estava lá. Uma sombra. De um enforcado.');
-  await scare(1,'Ela descreve a sombra em detalhe. Você sente o pescoço apertar.');
-  await pista(3,'a foto da Helena mostra a sombra de um enforcado que ninguém viu.');
+  await say('helena','Guilherme? Helena, do IML. Acabei a autópsia do Otávio Lins.');
+  await say('helena','O pescoço dele tem três marcas de corda, uma por cima da outra. Como se a corda tivesse arrebentado três vezes antes de funcionar.');
+  await scare(1,'Três vezes. Igual ao Chaguinhas em 1821. Você sente o pescoço apertar.');
+  await pista(3,'na autópsia, a Helena achou três marcas de corda: a corda arrebentou três vezes.');
   S.flags.capela=1;
   await narr('Capela dos Aflitos liberada no táxi do Seu Valdir.');
 }
@@ -339,76 +347,93 @@ async function porao(){
   if(!has('velaacesa')){if(has('vela'))return G('Lá embaixo é breu. A vela não acende sozinha.');return G('Lá embaixo é breu, e a lâmpada queimou faz meses. Preciso de luz.')}
   SFX.fx('porta',.7);await fadeTo('porao');
 }
-SC.capelafora={amb:'chuva',rua:1,img:'capelafora',f:'none',base:650,gh:300,range:[250,960],start:560,rain:.06,showRain:1,follow:'tiana',
+SC.capelafora={amb:'chuva',rua:1,img:'largo',f:'none',base:655,gh:300,range:[150,960],start:520,rain:.06,showRain:1,follow:'tiana',
   hots:[
-    {l:'Porta azul da capela',r:[222,240,108,320],x:350,olhar:'Porta azul, gasta de tanta mão. Dizem que quem bate faz pedido ao Chaguinhas.',
-      any:async()=>{if(S.flags.marleneAbriu)return fadeTo('capeladentro');if(!S.flags.nota){SFX.knock();await sleep(600);return narr('Bato na porta. Ninguém atende. Talvez exista um jeito certo de bater.')}
-        await narr('Bato três vezes, como dizia o recado.');SFX.knock();await sleep(1800);await say('marlene','Três batidas... faz quarenta anos que ninguém bate assim. Entra, meu filho.');S.flags.marleneAbriu=1;SFX.fx('porta',.7);await fadeTo('capeladentro')}},
-    {l:'Velas e pedidos',r:[170,520,240,130],olhar:'Velas derretidas e bilhetes molhados. Pedidos de gente que não tem a quem pedir.',pegar:'Mexer nos pedidos dos outros? Nem morto. Principalmente morto.'},
-    {l:'Lanternas',r:[460,230,170,130],olhar:'As lanternas vermelhas da Liberdade. De longe parecem olhos.'},
-    {l:'Poste',r:[610,80,90,180],olhar:'A luz amarela pisca no ritmo da garoa.'},
-    {l:'Beco',r:[400,380,260,160],olhar:'O beco some na garoa. Em 1821, o povo veio por aqui ver o enforcamento.'},
-    {l:'Parede pichada',r:[800,380,224,250],olhar:'"PIXAÇÃO". Pelo menos alguém escreve nesse bairro.'}
+    {l:'Porta da Capela dos Aflitos',r:[350,370,52,115],x:375,olhar:'A porta da Capela dos Aflitos. Dizem que quem bate três vezes faz um pedido ao Chaguinhas.',
+      any:async()=>{if(S.flags.sarahAbriu)return entrarAcademia();if(!S.flags.nota){SFX.knock();await sleep(600);return narr('Bato na porta. Ninguém atende. Talvez exista um jeito certo de bater.')}
+        await narr('Bato três vezes, como dizia o recado.');SFX.knock();await sleep(1800);await say('sarah','Quem bate três vezes na capela a essa hora? Aqui do lado, moço! Na academia!');S.flags.sarahAbriu=1;await entrarAcademia()}},
+    {l:'Academia de capoeira',r:[45,365,65,130],x:150,olhar:'Uma porta de madeira com uma plaquinha: CAPOEIRA MUZENZA. Dá pra ouvir um berimbau lá dentro.',
+      any:async()=>{if(S.flags.sarahAbriu)return entrarAcademia();await narr('Bato na porta da academia. O berimbau para... e volta a tocar. Ninguém abre.');if(S.flags.nota)await G('O recado falava em bater três vezes. Mas na capela.')}},
+    {l:'Cruzeiro',r:[580,280,140,220],x:640,olhar:'O cruzeiro do Largo da Forca. Aqui ficava a forca. Em 1821, a corda do Chaguinhas arrebentou três vezes.',usar:'Nem pensar em mexer nisso.'},
+    {l:'Torre da capela',r:[350,40,145,200],olhar:'O sino está parado. Mas tem gente que jura ouvir ele tocar às três da manhã.'},
+    {l:'Orelhões',r:[515,405,100,60],olhar:'Dois orelhões. Um deles está com o fone pendurado, balançando.'},
+    {l:'Prédios',r:[500,130,250,170],olhar:'A cidade cresceu em volta do largo, como quem tenta esquecer.'},
+    {l:'Árvore',r:[780,0,244,260],olhar:'Uma árvore velha. Os galhos fazem sombra de corda no chão molhado.'}
   ],
-  async enter(){if(S.flags.bilhete&&!S.flags.vulto){S.flags.vulto=1;await sleep(400);SFX.growl();latir();await narr('Ao sair, a Tiana trava e encara o fundo do beco. Rosna antes de qualquer coisa acontecer.');SFX.sting();
-      await narr('Lá no fundo, um vulto com uma corda no pescoço. Ele some na garoa.');await narr('Graças ao aviso da Tiana, Guilherme estava preparado. A sanidade fica inteira.');
-      await G('Preciso ver o laudo dessas mortes. A Sarah não vai me mostrar... mas o Ayrton, plantonista da delegacia, talvez nem perceba.');S.flags.dp=1;await narr('1º DP liberado no táxi do Seu Valdir.')}
-    else if(!S.flags.capelaVisit){S.flags.capelaVisit=1;await narr('Liberdade. A Capela dos Aflitos, onde rezavam os condenados do Largo da Forca. A Tiana veio junto.')}}
+  async enter(){if(S.flags.bilhete&&!S.flags.vulto){S.flags.vulto=1;await sleep(400);SFX.growl();latir();await narr('Ao sair, a Tiana trava e encara o cruzeiro. Rosna antes de qualquer coisa acontecer.');SFX.sting();
+      await narr('Ao pé do cruzeiro, um vulto com uma corda no pescoço. Ele some na garoa.');await narr('Graças ao aviso da Tiana, Guilherme estava preparado. A sanidade fica inteira.');
+      await G('Preciso ver o laudo dessas mortes. A delegada Joana não vai me mostrar... mas o André, escrivão do 1º DP, talvez nem perceba.');S.flags.dp=1;await narr('1º DP liberado no táxi do Seu Valdir.')}
+    else if(!S.flags.capelaVisit){S.flags.capelaVisit=1;await narr('Largo da Forca. De um lado, a Capela dos Aflitos; do outro, o cruzeiro onde ficava a forca. A Tiana veio junto.')}}
 };
-SC.capeladentro={amb:'capela',img:'capeladentro',f:'none',base:687,gh:400,range:[230,850],start:600,rain:.03,follow:'tiana',
-  sprites:()=>[{id:'marlene',img:'marlene',x:400,y:650,h:380}],
-  exits:[{l:'Sair',r:[0,560,140,127],to:'capelafora'}],
+async function entrarAcademia(){SFX.fx('porta',.6);await fadeTo('capeladentro')}
+SC.capeladentro={amb:'capela',img:'capoeira',f:'none',base:665,gh:360,range:[220,860],start:330,rain:.03,follow:'tiana',
+  sprites:()=>[{id:'sarah',img:'sg4',x:600,y:600,h:330,anim:'sarah'}],
+  exits:[{l:'Sair',r:[160,215,150,250],to:'capelafora'}],
   hots:[
-    {l:'Banca de velas',r:[65,300,260,220],x:300,olhar:'Velas a CR$ 500. "Pague na lata", diz a plaquinha.',
+    {l:'Altar com velas',r:[440,290,110,55],x:470,olhar:'Um altar pequeno com velas acesas para Nossa Senhora dos Aflitos. "Velas: CR$ 500", diz um papel.',
       pegar:async()=>comprarVela(),usar:async()=>comprarVela()},
-    {l:'Altar',r:[470,290,190,190],olhar:'Um altar simples. Alguém deixou flores frescas. Hoje.'},
-    {l:'Crucifixo',r:[535,55,85,150],olhar:'O Cristo tem marcas no pescoço. Ou é a madeira rachada. Prefiro achar que é a madeira.'},
-    {l:'Quadros de santos',r:[0,110,140,250],olhar:'Santos de olhos tristes. Todos olhando para a caixa de bilhetes.'},
-    {l:'Caixa de bilhetes',r:[665,395,175,110],olhar:'Caixa de madeira com cadeado. Os pedidos antigos ficam aqui.',
-      pegar:'Trancada. A chave deve estar com a Dona Marlene.',usar:async it=>{if(it==='nota')return marleneBilhete();return G('Está trancada.')}},
-    {l:'Fundo escuro',r:[880,140,144,470],x:830,olhar:async()=>{if(S.flags.fundo)return narr('Só escuro agora. Graças a Deus.');S.flags.fundo=1;SFX.bark();latir();await narr('Antes de você olhar, a Tiana late para o escuro.');SFX.sting();await narr('Uma mão pálida se recolhe para a sombra. Você estava avisado: a sanidade fica inteira.')},
+    {l:'Caixa de bilhetes',r:[460,375,80,45],x:480,olhar:'Uma caixa de madeira com os bilhetes antigos de pedido da Capela.',
+      pegar:'É da mestra Sarah. Melhor pedir.',usar:async it=>{if(it==='nota')return sarahBilhete();return G('Melhor pedir pra mestra Sarah.')}},
+    {l:'Berimbaus',r:[620,300,130,140],olhar:'Três berimbaus: gunga, médio e viola. A mestra afina um por um antes da roda.',usar:async()=>{SFX.tone(110,.6,'sawtooth',.12);await narr('Tento tocar. Sai um som de gato pisado.')}},
+    {l:'Atabaque',r:[770,355,60,100],olhar:'O atabaque da roda. O couro está quente, alguém tocou há pouco.',usar:async()=>{SFX.tone(70,.4,'sine',.5);SFX.tone(70,.4,'sine',.5,.25);await narr('Bum, bum. A Tiana abana o rabo no ritmo.')}},
+    {l:'Retratos dos mestres',r:[640,210,170,80],olhar:'Os mestres antigos da Muzenza. Num deles, ao fundo, aparece o Largo da Forca... com uma corda pendurada no cruzeiro.'},
+    {l:'Estandartes',r:[415,240,150,50],olhar:'Estandartes de santos e orixás, lado a lado. Aqui ninguém briga por fé.'},
+    {l:'Fundo escuro',r:[890,100,134,420],x:840,olhar:async()=>{if(S.flags.fundo)return narr('Só escuro agora. Graças a Deus.');S.flags.fundo=1;SFX.bark();latir();await narr('Antes de você olhar, a Tiana late para o escuro.');SFX.sting();await narr('Uma mão pálida se recolhe para a sombra. Você estava avisado: a sanidade fica inteira.')},
       andar:'Não vou entrar ali. A Tiana também não quer.'}
   ],
-  npc:{marlene:{l:'Dona Marlene',olhar:'Dona Marlene. Zela a capela há quarenta anos. Tem uma chavinha na mão.',
-      falar:async()=>{if(S.flags.bilhete)return say('marlene','Vai com Deus, meu filho. E com a cachorrinha. Ela enxerga mais que nós.');
-        if(has('nota')){await say('marlene','O que te traz aqui, meu filho?');await G('Esse recado. Estava com um homem que morreu.');return marleneBilhete()}
-        await say('marlene','A capela é dos aflitos. Quem chega aqui sempre traz alguma coisa na mão.')},
-      usar:async it=>{if(it==='nota')return marleneBilhete();if(it==='bilhete')return say('marlene','Esse bilhete esperou quarenta anos por você.');return say('marlene','Isso não é pra mim, meu filho.')}}},
-  async enter(){if(!S.flags.dentro){S.flags.dentro=1;await narr('Dentro, cheiro de cera e mofo. Dona Marlene apoia a vassoura e te mede de cima a baixo.')}}
+  npc:{sarah:{l:'Mestra Sarah',olhar:'Mestra Sarah. Comanda a roda da Muzenza e conhece cada pedra do Largo da Forca.',
+      falar:async()=>{if(S.flags.bilhete)return say('sarah','Vai com o Chaguinhas, Guilherme. E presta atenção na Tiana. Ela tem malícia de capoeirista.');
+        if(has('nota')){await say('sarah','Três batidas na capela... Quem te ensinou isso?');await G('Esse recado. Estava com um homem que morreu.');return sarahBilhete()}
+        await say('sarah','Roda é só no sábado, moço. Mas se veio por causa do Chaguinhas, vem com alguma coisa na mão.')},
+      usar:async it=>{if(it==='nota')return sarahBilhete();if(it==='bilhete')return say('sarah','Esse bilhete esperou quarenta anos por você.');return say('sarah','Isso não é meu, não.')}}},
+  async enter(){if(!S.flags.dentro){S.flags.dentro=1;await narr('Uma academia de capoeira, colada na capela. Cheiro de suor, vela e madeira velha.');await say('sarah','Mestra Sarah. Pode entrar, mas tira o sapato da cabeça, que aqui é chão sagrado.')}}
 };
-async function comprarVela(){if(has('vela')||has('velaacesa'))return G('Uma vela basta. Espero.');if(S.cr<500){await G('Não tenho nem CR$ 500...');await say('marlene','Leva, meu filho. O Chaguinhas não cobra de quem está aflito.');give('vela');return}S.cr-=500;drawHud();await narr('Deixo CR$ 500 na lata e pego uma vela.');give('vela')}
-async function marleneBilhete(){if(S.flags.bilhete)return say('marlene','Já te dei o que era seu.');
-  await narr('Dona Marlene lê o recado da nota fiscal e fica pálida.');
-  await say('marlene','Esse homem esteve aqui semana passada. Pediu pra ver os bilhetes velhos.');
-  await narr('Ela abre o cadeado da caixa e tira um papel amarelado, dobrado em quatro.');
-  await say('marlene','Esse aí eu nunca joguei fora. Tem o seu sobrenome, meu filho.');
+async function comprarVela(){if(has('vela')||has('velaacesa'))return G('Uma vela basta. Espero.');if(S.cr<500||(S.rel&&S.rel.sarah>0)){if(S.cr<500)await G('Não tenho nem CR$ 500...');await say('sarah','Leva, Guilherme. O Chaguinhas não cobra de quem está aflito.');give('vela');return}S.cr-=500;drawHud();await narr('Deixo CR$ 500 na lata e pego uma vela.');give('vela')}
+async function sarahBilhete(){if(S.flags.bilhete)return say('sarah','Já te dei o que era seu.');
+  await narr('A mestra Sarah lê o recado da nota fiscal e para de sorrir.');
+  await say('sarah','Minha avó foi zeladora da capela a vida inteira. Quando ela partiu, eu fiquei com os bilhetes de pedido.');
+  await say('sarah','Esse homem esteve aqui semana passada. Pediu pra ver os bilhetes velhos. Não gostei da malícia dele.');
+  const r=await escolha(['Me ajuda, mestra. Acho que o próximo sou eu.','Me dá o bilhete. É assunto de polícia.']);
+  if(r===0){rel('sarah',1);await G('Me ajuda, mestra. Acho que o próximo sou eu.');await say('sarah','Na roda a gente aprende a ler o outro. Você não tá mentindo.')}
+  else{rel('sarah',-1);await G('Me dá o bilhete. É assunto de polícia.');await say('sarah','Polícia? Você nem distintivo tem. ...Toma. Mas fica me devendo.')}
+  await narr('Ela abre a caixa de madeira e tira um papel amarelado, dobrado em quatro.');
+  await say('sarah','Esse aí a minha avó nunca deixou jogar fora. Tem o seu sobrenome.');
   S.flags.bilhete=1;give('bilhete');
   await pista(4,'"O último Medeiros paga a corda. 20/9". O bilhete é antigo.');
   await G('Vinte de setembro... o dia em que enforcaram o Chaguinhas.');
 }
 SC.delegacia={amb:'delegacia',img:'delegacia',f:'none',base:687,gh:410,range:[230,820],start:330,rain:.04,
-  sprites:()=>{const a=[{id:'pedro',img:'pd0',x:140,y:687,h:395,anim:'pedro'}];if(!(S.flags.distr>0))a.push({id:'plantonista',img:'plantonista',x:905,y:687,h:420,flip:1});return a},
+  sprites:()=>{const a=[{id:'pedro',img:'pg_0',x:140,y:687,h:395,anim:'pedro'}];if(!(S.flags.distr>0))a.push({id:'andre',img:'anc0',x:900,y:687,h:415,flip:1,anim:'andre'});return a},
   hots:[
     {l:'Janela',r:[0,140,230,270],x:250,olhar:'Grade e garoa. A vista mais honesta da cidade.'},
-    {l:'Arquivo de aço',r:[300,240,195,320],olhar:async()=>{if(!(S.flags.distr>0))return G('O Ayrton está de olho. Preciso de uma distração.');await narr('Pasta "CASO CORDA". O laudo diz: fibra de cânhamo com mais de 150 anos.');await pista(5,'a corda dos crimes tem mais de 150 anos.')},
+    {l:'Arquivo de aço',r:[300,240,195,320],olhar:async()=>{if(!(S.flags.distr>0))return G('O André está de olho. Preciso de uma distração.');await narr('Pasta "CASO CORDA". O laudo diz: fibra de cânhamo com mais de 150 anos.');await pista(5,'a corda dos crimes tem mais de 150 anos.')},
       pegar:async()=>SC.delegacia.hots[1].olhar()},
     {l:'Ventilador',r:[380,60,290,90],olhar:'Gira devagar. Não refresca ninguém desde 1987.'},
-    {l:'Máquina de escrever',r:[495,405,115,75],olhar:'Um boletim pela metade: "...três nós desenhados a carvão..."'},
-    {l:'Telefone',r:[712,420,80,55],olhar:'O telefone da delegacia.',usar:'Não vou ligar daqui. Seria a primeira coisa que a Sarah descobriria.'},
+    {l:'Máquina de escrever',r:[495,405,115,75],olhar:'O boletim do André, pela metade: "...três nós desenhados a carvão..."'},
+    {l:'Telefone',r:[712,420,80,55],olhar:'O telefone da delegacia.',usar:'Não vou ligar daqui. Seria a primeira coisa que a delegada Joana descobriria.'},
     {l:'Cigarros e isqueiro',r:[565,500,100,50],olhar:'Um maço de cigarro e um Zippo prateado.',
-      pegar:async()=>{if(has('isqueiro')||S.flags.isq)return G('Já está comigo.');if(!(S.flags.distr>0))return G('Com o Ayrton olhando? Não.');S.flags.isq=1;give('isqueiro')}},
-    {l:'Mural das vítimas',r:[660,195,335,230],olhar:async()=>{if(!(S.flags.distr>0))return G('Daqui não consigo ler. E o Ayrton não sai da frente.');await narr('Quatro fotos ligadas por linha vermelha. Ao lado de cada nome: "comprou livro sobre o Largo da Forca".');await pista(6,'as quatro vítimas compraram livros sobre o Largo da Forca.')}},
+      pegar:async()=>{if(has('isqueiro')||S.flags.isq)return G('Já está comigo.');if(!(S.flags.distr>0))return G('Com o André olhando? Não.');S.flags.isq=1;give('isqueiro')}},
+    {l:'Mural das vítimas',r:[660,195,335,230],olhar:async()=>{if(!(S.flags.distr>0))return G('Daqui não consigo ler. E o André não sai da frente.');await narr('Quatro fotos ligadas por linha vermelha. Ao lado de cada nome: "comprou livro sobre o Largo da Forca".');await pista(6,'as quatro vítimas compraram livros sobre o Largo da Forca.')}},
     {l:'Caixas e papéis',r:[20,510,250,120],olhar:'Processos esquecidos. Alguns de 1954.'}
   ],
   npc:{
-    plantonista:{l:'Ayrton',olhar:'Ayrton, o plantonista. Café na mão, preguiça no olhar.',falar:async()=>{await say('plantonista','Sem autorização da Dra. Sarah, nada. Nem banheiro.')},usar:async()=>say('plantonista','Tá querendo me subornar? Com isso?')},
+    andre:{l:'André',olhar:'André, escrivão da Polícia Civil. Arma na cintura, café na mão e uma foto da filha delegada em cima da mesa.',
+      falar:async()=>{if(S.flags.andreConv){if(S.rel&&S.rel.andre>0)return say('andre','Já falei que ela é a delegada mais nova do estado? Já? Então falo de novo!');return say('andre','Sem autorização da delegada, nada. Nem banheiro.')}
+        S.flags.andreConv=1;
+        const r=await escolha(['A delegada Joana é sua filha? Ela parece muito competente.','Preciso ver o laudo do caso da corda.','Nada não. Só esperando.']);
+        if(r===0){rel('andre',1);await G('A delegada Joana é sua filha? Ela parece muito competente.');await say('andre','Competente? É a delegada mais nova do estado! Eu passei café pra ela a vida inteira. Agora eu passo café NA delegacia dela!');await narr('Ele estufa o peito. Daria pra pendurar uma medalha ali.')}
+        else if(r===1){rel('andre',-1);await G('Preciso ver o laudo do caso da corda.');await say('andre','Laudo? Sem autorização da delegada, nada. Nem banheiro.')}
+        else{await G('Nada não. Só esperando.');await say('andre','Então espera sentado. Café acabou de passar, se quiser.')}},
+      usar:async()=>say('andre','Tá querendo me subornar? Com isso? Eu sou escrivão, rapaz, não sou bobo.')},
     pedro:{l:'Pedro',olhar:'Pedro. Pronto para causar.',
       falar:async()=>{if(S.flags.distr>0)return say('pedro','Anda logo, chefe! Ele já tá voltando!');
         await say('pedro',S.flags.distrN?'De novo? Tá bom... último café.':'Deixa comigo. Sou desastrado profissional.');
-        S.flags.distrN=(S.flags.distrN||0)+1;SFX.fx('cafe');await narr('O Pedro "tropeça" e derruba um copo de café no balcão. O Ayrton sai xingando atrás de um pano.');
-        S.flags.distr=6;renderSprites();drawHud()}}
+        S.flags.distrN=(S.flags.distrN||0)+1;SFX.fx('cafe');
+        if(S.rel&&S.rel.andre>0){await narr('O Pedro "tropeça" e derruba café no balcão. O André sai atrás de um pano... e ainda para pra mostrar ao Pedro a foto da formatura da filha.');S.flags.distr=9}
+        else{await narr('O Pedro "tropeça" e derruba um copo de café no balcão. O André sai xingando atrás de um pano.');S.flags.distr=6}
+        renderSprites();drawHud()}}
   },
-  async enter(){if(!S.flags.dpVisit){S.flags.dpVisit=1;await narr('1º Distrito Policial. Pedro veio junto, mascando chiclete.');await say('plantonista','Pois não?')}}
+  async enter(){if(!S.flags.dpVisit){S.flags.dpVisit=1;await narr('1º Distrito Policial. Pedro veio junto, mascando chiclete.');await say('andre','Pois não? A delegada saiu numa diligência. Sou o André, escrivão. E pai dela, aliás.')}}
 };
 SC.porao={amb:'porao',img:'porao',f:'brightness(.95)',base:687,gh:400,range:[160,880],start:300,rain:.02,dark:1,follow:'tiana',follow2:'nori',
   exits:[{l:'Subir',r:[0,70,330,250],to:'sebo'}],
@@ -436,25 +461,30 @@ SC.parede={amb:'porao',img:'parede',f:'none',noWalk:1,hots:[],
   }
 };
 
-SC.redacao={amb:'redacao',img:'redacao',base:687,gh:390,range:[150,880],start:250,
-  sprites:()=>[{id:'helena',img:'helena',x:745,y:478,h:235,flip:1}],
+SC.iml={amb:'delegacia',img:'iml',base:655,gh:340,range:[150,640],start:300,
+  sprites:()=>[{id:'helena',img:'hea0',x:700,y:560,h:300,flip:1,anim:'helena'}],
   hots:[
-    {l:'Janela',r:[0,110,335,225],x:260,olhar:'A cidade lá fora, molhada e acesa. Ninguém dorme no centro.'},
-    {l:'Manchetes',r:[360,180,180,130],olhar:'"Crime bizarro na Luz", "Corpo enforcado no Tietê". O jornal que, se espremer, sai sangue.'},
-    {l:'Mais manchetes',r:[565,175,215,140],olhar:'"Assassino em fuga", "Golpe no Tietê". Nenhuma fala do Largo da Forca. Ainda.'},
-    {l:'Varal de fotos',r:[695,30,320,140],x:760,olhar:async()=>{if(S.flags.varal)return narr('Melhor não olhar de novo.');S.flags.varal=1;await narr('Fotos da cena do crime secando no varal. Em todas, a mesma sombra de um enforcado.');await scare(1,'Numa delas, a sombra parece olhar para a câmera.')}},
-    {l:'Laboratório',r:[812,205,120,210],x:820,olhar:'A luz vermelha está acesa: tem filme sendo revelado lá dentro.',any:async()=>labHelena()},
-    {l:'Máquina de escrever',r:[40,450,200,90],olhar:'Uma lauda pela metade: "O ESCRITOR MALDITO DA LIBERDADE". Espero que não seja sobre mim.'},
-    {l:'Telefone',r:[765,525,105,80],olhar:'Toca sem parar. Ninguém atende jornal à meia-noite.'}
+    {l:'Corpo coberto',r:[0,390,265,170],x:240,olhar:async()=>{if(!S.flags.recorte)return helenaCorpo();await narr('Melhor deixar o Otávio descansar.')}},
+    {l:'Mesa de autópsia',r:[215,425,355,70],olhar:'Aço frio. Limpa demais.'},
+    {l:'Instrumentos',r:[135,465,230,60],olhar:'Bisturis, pinças e uma serra pequena.',pegar:'Bisturi não é item de detetive.'},
+    {l:'Potes',r:[250,205,200,110],olhar:'Órgãos em formol. Prefiro não ler os rótulos.'},
+    {l:'Pôster de anatomia',r:[475,220,85,115],olhar:'Um pôster de anatomia. Alguém desenhou três nós no pescoço do boneco, de caneta.'},
+    {l:'Câmara fria',r:[855,180,130,370],x:640,olhar:async()=>{if(S.flags.gaveta)return narr('Fechada. E vai continuar fechada.');S.flags.gaveta=1;await narr('As portas da câmara fria. Uma delas está entreaberta...');await scare(1,'Lá de dentro vem um som de corda rangendo.')}},
+    {l:'Laudos',r:[570,575,300,70],x:620,olhar:'Laudos empilhados. Quatro com o mesmo carimbo: "asfixia mecânica, corda antiga".'},
+    {l:'Telefone',r:[460,355,50,30],olhar:'O telefone do IML. Toca e ninguém atende.'}
   ],
-  npc:{helena:{l:'Helena',olhar:'Helena. Fotógrafa do NP. Já viu de tudo, e agora viu demais.',
-    falar:async()=>{if(!S.flags.recorte)return labHelena();await say('helena','Toma cuidado, Guilherme. As fotos não mentem. As pessoas, sim.')},
-    usar:async it=>{if(it==='bilhete'){await say('helena','"20/9"... a mesma data do recorte. Isso não é coincidência.');return}return say('helena','Isso eu não sei fotografar.')}}},
-  async enter(){if(!S.flags.npVisit){S.flags.npVisit=1;await narr('Redação do Notícias Populares. Meia-noite, e ninguém dorme aqui.');await say('helena','Guilherme! Vem cá. Achei uma coisa no arquivo que você precisa ver.')}}
+  npc:{helena:{l:'Dra. Helena',olhar:'Dra. Helena, médica legista. Já viu de tudo, e agora viu demais.',
+    falar:async()=>{if(!S.flags.recorte)return helenaCorpo();await say('helena','Toma cuidado, Guilherme. Os corpos não mentem. As pessoas, sim.')},
+    usar:async it=>{if(it==='bilhete'){await say('helena','"20/9"... a mesma data do recorte. Isso não é coincidência.');return}return say('helena','Isso não vai pra autópsia, Guilherme.')}}},
+  async enter(){if(!S.flags.npVisit){S.flags.npVisit=1;await narr('IML, o Instituto Médico Legal. Meia-noite. A luz fria zumbe sobre a mesa de autópsia.');await say('helena','Guilherme! Chegou na hora. Quero te mostrar uma coisa que não coube no laudo.')}}
 };
-async function labHelena(){if(S.flags.recorte)return say('helena','Já te dei o recorte. O resto é com você.');
-  await say('helena','Fui no arquivo de 1954. Olha isso.');
-  await narr('Ela te entrega um recorte amarelado do próprio NP, de 21 de setembro de 1954.');
+SC.redacao=SC.iml;
+async function helenaCorpo(){if(S.flags.recorte)return say('helena','Já te dei o recorte. O resto é com você.');
+  await say('helena','O Otávio tinha uma coisa na boca. Dobrada, escondida debaixo da língua.');
+  const r=await escolha(['Pode mostrar. Eu aguento.','Só me conta, por favor.']);
+  if(r===0){rel('helena',1);await G('Pode mostrar. Eu aguento.');await narr('Ela levanta o lençol. O rosto do Otávio está sereno. Sereno demais.');await scare(1,'Por um instante, você jura que ele sorriu.')}
+  else{await G('Só me conta, por favor.');await say('helena','Tudo bem. Nem todo mundo precisa ver.')}
+  await narr('Ela te entrega um recorte amarelado do Notícias Populares, de 21 de setembro de 1954.');
   S.flags.recorte=1;give('recorte');
   await pista(9,'em 20 de setembro de 1954, Antônio Medeiros, irmão do vô José Marcelino, foi achado enforcado com três nós a carvão.');
   await G('Vinte de setembro de novo. A mesma data da execução do Chaguinhas.');
@@ -471,7 +501,7 @@ SC.casafora={amb:'praia',rua:1,img:'casafora',base:680,gh:300,range:[150,950],st
   async enter(){if(!S.flags.praia){S.flags.praia=1;await narr('Uma hora de estrada no Opala do Seu Valdir. Praia Grande, debaixo de tempestade.');await G('A casa da vó. Faz anos que eu não venho aqui.')}}
 };
 SC.sala={amb:'casa-vo',img:'sala',base:687,gh:400,range:[230,680],start:320,follow:'tiana',trovao:1,raio:'sala_raio',
-  sprites:()=>[{id:'izabel',img:'izabel',x:560,y:635,h:330}],
+  sprites:()=>[{id:'izabel',img:'ir0',x:560,y:635,h:330,anim:'izabel'}],
   exits:[{l:'Sair',r:[0,560,140,127],to:'casafora'}],
   hots:[
     {l:'Retratos da família',r:[5,55,245,185],x:250,olhar:async()=>{await narr('Os Medeiros. O vô José Marcelino, a vó Maria Izabel jovem... e um homem que ninguém sabe dizer quem é.');await narr('Atrás do retrato do vô, a letra dele a lápis: "20-09. Nunca esquecer."');S.flags.dica2009=1}},
@@ -524,15 +554,15 @@ function renderSprites(){
     box.appendChild(im)});
   gEl=null;
   if(!c.noWalk){
-    if(c.follow){const f=new Image();f.src=IMG(S.scene==='porao'?'tiana1':'tiana0');f.className='spr idle';f.id='f1';f.style.height=(c.gh*.25)+'px';box.appendChild(f)}
-    if(c.follow2){const f=new Image();f.src=IMG('nori0');f.className='spr idle';f.id='f2';f.style.height=(c.gh*.21)+'px';box.appendChild(f)}
+    if(c.follow){const f=new Image();f.src=IMG(S.scene==='porao'?'tl4':'ta0');f.className='spr idle';f.id='f1';f.style.height=(c.gh*.30)+'px';box.appendChild(f)}
+    if(c.follow2){const f=new Image();f.src=IMG('nr0');f.className='spr idle';f.id='f2';f.style.height=(c.gh*.18)+'px';box.appendChild(f)}
     gEl=document.createElement('div');gEl.innerHTML=`<img class=gst src=${IMG('guilherme')}><img class=gwk src=${IMG('gw0')}><img class=gid src=${IMG('gia0')}>`;gEl.className='spr gman idle';gEl.dataset.id='guilherme';gEl.style.height=c.gh+'px';gEl.style.width=(c.gh*235/654)+'px';gEl.style.top=(c.base-c.gh)+'px';box.appendChild(gEl);placeG();
   }
 }
 function placeG(){const c=cur();if(!gEl)return;gEl.style.left=gx+'px';gEl.style.transform='translateX(-50%)';gEl.querySelector('.gst').style.transform=`scaleX(${gdir>0?-1:1})`;gEl.querySelector('.gwk').style.transform=gdir>0?'translateX(-59.7%)':'translateX(-40.3%) scaleX(-1)';const gi=gEl.querySelector('.gid');const an=GANC[gi.dataset.set||'gia'];gi.style.transform=gdir>0?`translateX(-${100-an*100}%) scaleX(-1)`:`translateX(-${an*100}%)`;
   const f1=$('#f1'),f2=$('#f2');
-  if(f1){const h=c.gh*.25;f1.style.left=(gx-gdir*c.gh*.32)+'px';f1.style.top=(c.base-h)+'px';f1.style.transform=`translateX(-50%) scaleX(${gdir>0?1:-1})`}
-  if(f2){const h=c.gh*.21;f2.style.left=(gx-gdir*c.gh*.62)+'px';f2.style.top=(c.base-h+4)+'px';f2.style.transform=`translateX(-50%) scaleX(${gdir>0?1:-1})`}
+  if(f1){const h=c.gh*.30;f1.style.left=(gx-gdir*c.gh*.42)+'px';f1.style.top=(c.base-h)+'px';f1.style.transform=`translateX(-50%) scaleX(${gdir>0?1:-1})`}
+  if(f2){const h=c.gh*.18;f2.style.left=(gx-gdir*c.gh*.85)+'px';f2.style.top=(c.base-h+4)+'px';f2.style.transform=`translateX(-50%) scaleX(${gdir>0?1:-1})`}
   if(c.dark)$('#dark').style.background=`radial-gradient(circle at ${gx+gdir*30}px ${c.base-c.gh*.6}px, rgba(0,0,0,0) 0, rgba(0,0,0,0) 150px, rgba(0,0,0,.6) 260px, rgba(0,0,0,.95) 420px)`;
 }
 function walkTo(x){const c=cur();if(c.noWalk||!gEl)return Promise.resolve();x=Math.max(c.range[0],Math.min(c.range[1],x));const d=x-gx;if(Math.abs(d)<12)return Promise.resolve();
@@ -540,17 +570,26 @@ function walkTo(x){const c=cur();if(c.noWalk||!gEl)return Promise.resolve();x=Ma
   return new Promise(res=>{const wk=gEl.querySelector('.gwk');let lf=-1;const step=now=>{const k=Math.min(1,(now-t0)/dur);gx=x0+d*k;const fr=Math.floor((now-t0)/105)%6;if(fr!==lf){lf=fr;wk.src=IMG('gw'+fr)}placeG();if(k<1)requestAnimationFrame(step);else{gEl.classList.remove('walking');gEl.classList.add('idle');dogs(false);SFX.steps(false);S.gx=gx;res()}};requestAnimationFrame(step)})}
 let dogT=null;
 function dogs(w){const f1=$('#f1'),f2=$('#f2');clearInterval(dogT);
-  if(f1){f1.classList.toggle('dogwalk',w);f1.classList.toggle('idle',!w);f1.src=IMG(S.scene==='porao'&&!w?'tiana1':'tiana0')}
-  if(f2){f2.classList.toggle('dogwalk',w);f2.classList.toggle('idle',!w);f2.src=IMG('nori0')}
-  if(w){let n=0;dogT=setInterval(()=>{n++;if(f1)f1.src=IMG(n%2?'tiana2':'tiana0');if(f2)f2.src=IMG(n%2?'nori1':'nori0')},170)}}
+  if(f1){f1.classList.toggle('dogwalk',false);f1.classList.toggle('idle',!w);f1.src=IMG(S.scene==='porao'&&!w?'tl4':'ta0')}
+  if(f2){f2.classList.toggle('dogwalk',false);f2.classList.toggle('idle',!w);f2.src=IMG('nr0')}
+  if(w){let n=0;const W1=['ta1','ta2','ta3','ta2'],W2=['nr1','nr2','nr3','nr2'];dogT=setInterval(()=>{n++;if(f1)f1.src=IMG(W1[n%4]);if(f2)f2.src=IMG(W2[n%4])},130)}}
 function anim(id,cls='talk'){const e=document.querySelector(`.spr[data-id="${id}"]`);if(!e)return;e.classList.remove(cls);void e.offsetWidth;e.classList.add(cls);setTimeout(()=>e.classList.remove(cls),1100)}
-function latir(){const e=document.querySelector('.spr[data-id="tiana"]')||$('#f1');if(!e)return;const o=e.src;let n=0;const t=setInterval(()=>{e.src=IMG(n%2?'tiana0':'tiana1');if(++n>5){clearInterval(t);e.src=o}},180)}
+function latir(){const e=document.querySelector('.spr[data-id="tiana"]')||$('#f1');if(!e)return;const o=e.src;let n=0;const t=setInterval(()=>{e.src=IMG(['tl4','tl5','tl6','tl5'][n%4]);if(++n>5){clearInterval(t);e.src=o}},180)}
 const ANIMS={
   nath:{talk:'ns3',seq:()=>[['ns0',2600],['ns1',350],['ns2',2400],Math.random()<.45?['ns3',1700]:['ns0',900]]},
-  pedro:{talk:'pd0',seq:()=>{const a=[];for(let k=0;k<4;k++)a.push(['pd0',130],['pd1',130],['pd2',130]);a.push(['pd0',1600],['pd3',800]);for(let k=0;k<6;k++)a.push(['pd4',360],['pd5',360]);a.push(['pd5',1800]);return a}}
+  nathL:{talk:'nl0',seq:()=>[['nl0',2600],['nl2',280],['nl3',420],['nl4',380],['nl5',300],['nl6',300],['nl7',3800],['nl6',300],['nl5',300],['nl4',300],['nl3',380],['nl2',280],['nl1',1500]]},
+  nathC:{talk:'nc0',seq:()=>[['nc0',3200],['nc1',280],['nc2',280],['nc3',420],['nc2',280],['nc3',420],['nc4',1600],['nc5',300],['nc6',300],['nc7',2400]]},
+  pedro:{talk:'pg_0',seq:()=>[['pg_0',2500],['pg_4',1300],['pg_0',800],['pg_3',1600],['pf2',1800],['pf3',2400],['pf2',600],['pf1',380],['pf0',2600],['pf1',300],['pf2',1000],['pg_6',1300],['pg_5',900]]},
+  andre:{talk:'ang0',seq:()=>[['anc0',2000],['anc1',700],['anc2',600],['anc3',900],['anc4',1500],['anc0',1500],['ang2',2000],['ang5',1200],['anc0',1500],['anc5',800]]},
+  joana:{talk:'joa1',seq:()=>[['job0',1500],['job1',2500],['job0',800],['job2',1500],['joa3',1200],['joa4',2500],['joa7',1500]]},
+  sarah:{talk:'sh1',seq:()=>{const a=[];for(let k=0;k<3;k++)a.push(['sg0',330],['sg1',330],['sg2',330],['sg3',330]);a.push(['sg4',2000],['sc1',400],['sc2',600],['sc3',800],['sc5',1500],['sh2',2500],['sh3',1000]);return a}},
+  helena:{talk:'heb0',seq:()=>[['hea0',1500],['hea4',2000],['hea1',1500],['hea2',900],['hea3',1500],['heb5',1200],['heb2',1800],['heb7',2000]]},
+  izabel:{talk:'ig0',seq:()=>[['ir0',700],['ir1',700],['ir2',700],['ir3',700],['ir4',700],['ir5',700],['ir6',700],['ir7',700],['ig2',1500],['ig4',1500],['ig1',1000]]}
 };
+const NATHPOSE={sit:{id:'nathalia',img:'ns0',x:72,y:578,h:228,anim:'nath'},livro:{id:'nathalia',img:'nl0',x:95,y:615,h:330,anim:'nathL'},cabelo:{id:'nathalia',img:'nc0',x:95,y:615,h:330,anim:'nathC'}};
+let nathPose='sit';
 async function runAnim(el){await sleep(Math.random()*1200);while(el.isConnected){for(const [f,ms] of ANIMS[el._anim].seq()){if(!el.isConnected)return;el.src=IMG(el._hold||f);await sleep(ms)}}}
-['izabel','helena','sala_raio','ns0','ns1','ns2','ns3','pd0','pd1','pd2','pd3','pd4','pd5'].forEach(n=>{const im=new Image();im.src=IMG(n)});
+['sala_raio'].concat(...Object.values(ANIMS).map(a=>a.seq().map(x=>x[0])),['nr0','nr1','nr2','nr3','nr5','nr6','nr7','ta0','ta1','ta2','ta3','ta5','ta6','ta7','tl4','tl5','tl6']).forEach(n=>{const im=new Image();im.src=IMG(n)});
 /* retratos animados */
 const PORT={guilherme:{base:'pg0',blink:['pg1'],talk:['pg2','pg3','pg2','pg0','pg3','pg2','pg0']}};
 Object.values(PORT).forEach(p=>[p.base,...p.blink,...p.talk].forEach(n=>{const im=new Image();im.src=IMG(n)}));
@@ -617,7 +656,7 @@ async function act(h){
 }
 async function tick(){
   if(S.scene==='delegacia'&&S.flags.distr>0){S.flags.distr--;drawHud();
-    if(S.flags.distr===0){renderSprites();await say('plantonista','Ei! Que que cê tá fazendo aí atrás do balcão?');await hurt(1,'Ele te empurra porta afora.');await fadeTo('sebo',()=>narr('Você volta ao sebo de táxi, com o orgulho machucado.'))}}
+    if(S.flags.distr===0){renderSprites();await say('andre','Ei! Que que cê tá fazendo aí atrás do balcão?');await hurt(1,'Ele te empurra porta afora.');await fadeTo('sebo',()=>narr('Você volta ao sebo de táxi, com o orgulho machucado.'))}}
 }
 async function invClick(it){
   if(busy||dlgResolve)return;
@@ -632,7 +671,7 @@ async function combinar(a,b){const p=[a,b].sort().join('+');
   await narr('Isso não combina com aquilo.')}
 
 async function fadeTo(name,mid){const was=busy;busy=true;try{await fadeIn(name,mid)}finally{busy=was}}
-async function fadeIn(name,mid){const f=$('#fade');f.style.opacity=1;await sleep(380);
+async function fadeIn(name,mid){const f=$('#fade');if(name==='sebo')nathPose=['sit','livro','cabelo'][Math.random()*3|0];f.style.opacity=1;await sleep(380);
   S.scene=name;const c=cur();gx=(S.gx!=null&&S._keepG)?S.gx:c.start;S._keepG=0;S.gx=gx;gdir=1;
   if(name!=='parede'){const cp=JSON.parse(JSON.stringify(S));delete cp.cp;S.cp=cp}
   draw();salvar();if(mid)await mid();f.style.opacity=0;await sleep(380);
@@ -665,21 +704,21 @@ $('#bsnd').onclick=e=>{e.stopPropagation();SFX.init();SFX.mute();$('#bsnd').text
 $('#bhome').onclick=e=>{e.stopPropagation();if(busy||dlgResolve)return;salvar();inicio()};
 $('#bfs').onclick=e=>{e.stopPropagation();if(document.fullscreenElement){document.exitFullscreen&&document.exitFullscreen()}else telaCheia()};
 document.addEventListener('fullscreenchange',()=>setTimeout(fit,100));
-for(let i=0;i<6;i++){const im=new Image();im.src=IMG('gw'+i)}['nori0','nori1','nori2','tiana2'].forEach(n=>{const im=new Image();im.src=IMG(n)});
-const PASSEIO={nori:{min:60,max:350,walk:['nori1','nori0'],rest:()=>Math.random()<.55?'nori2':'nori0',v:.09},
-  tiana:{min:200,max:640,walk:['tiana2','tiana0'],rest:()=>Math.random()<.3?'tiana1':'tiana0',v:.16}};
+for(let i=0;i<6;i++){const im=new Image();im.src=IMG('gw'+i)}
+const PASSEIO={nori:{min:60,max:350,walk:['nr1','nr2','nr3','nr2'],rest:()=>['nr7','nr6','nr0','nr5'][Math.random()*4|0],v:.09},
+  tiana:{min:220,max:640,walk:['ta1','ta2','ta3','ta2'],rest:()=>['ta6','ta0','tl4','ta5','ta7'][Math.random()*5|0],v:.16}};
 const andando={};
 setInterval(()=>{if(!S||S.scene!=='sebo'||busy||dlgResolve||$('#ov').classList.contains('on'))return;
   for(const id in PASSEIO){if(andando[id]||Math.random()>.3)continue;passear(id)}},2500);
 async function passear(id){const P=PASSEIO[id],el=document.querySelector(`.spr[data-id="${id}"]`);if(!el)return;andando[id]=1;
   const x0=parseFloat(el.style.left),x1=P.min+Math.random()*(P.max-P.min),dir=x1>x0?1:-1,t0=performance.now(),dur=Math.abs(x1-x0)/P.v;let n=0;
-  const tm=setInterval(()=>{el.src=IMG(P.walk[n++%2])},id==='tiana'?150:210);
+  const tm=setInterval(()=>{el.src=IMG(P.walk[n++%4])},id==='tiana'?130:170);
   await new Promise(res=>{const st=now=>{if(!el.isConnected){res();return}const k=Math.min(1,(now-t0)/dur);el.style.left=(x0+(x1-x0)*k)+'px';el.style.transform=`translateX(-50%) scaleX(${dir})`;if(k<1)requestAnimationFrame(st);else res()};requestAnimationFrame(st)});
-  clearInterval(tm);if(el.isConnected){const r=P.rest();el.src=IMG(r);if(r==='tiana1'){SFX.bark();setTimeout(()=>{if(el.isConnected)el.src=IMG('tiana0')},700)}if(el._t)el._t.x=x1}
+  clearInterval(tm);if(el.isConnected){const r=P.rest();el.src=IMG(r);if(r==='tl4'){SFX.bark();setTimeout(()=>{if(el.isConnected)el.src=IMG('tl5')},250);setTimeout(()=>{if(el.isConnected)el.src=IMG('ta0')},800)}if(el._t)el._t.x=x1}
   andando[id]=0}
-const PL={1:['Folha arrancada do livro de vendas','Sebo: olhe o livro de vendas no balcão'],2:['Nota fiscal: "Capela dos Aflitos, 3 batidas"','Sebo: dê um petisco ao Nori'],3:['A sombra do enforcado na foto da Helena','Vem junto com a nota fiscal'],
- 4:['Bilhete: "O último Medeiros paga a corda. 20/9"','Capela: fale com a Dona Marlene levando a nota fiscal'],5:['Laudo: corda com mais de 150 anos','Delegacia: olhe o arquivo de aço durante a distração do Pedro'],6:['As 4 vítimas compraram livros sobre o Largo da Forca','Delegacia: olhe o mural durante a distração do Pedro'],
- 7:['Caderno de 1954 do vô José Marcelino','Porão: olhe as caixas de livros'],8:['Três nós e MEDEIROS 1821 na parede','Porão: use a vela acesa na parede do fundo'],9:['Recorte de 1954: Antônio Medeiros enforcado','Redação do NP: fale com a Helena'],
+const PL={1:['Folha arrancada do livro de vendas','Sebo: olhe o livro de vendas no balcão'],2:['Nota fiscal: "Capela dos Aflitos, 3 batidas"','Sebo: dê um petisco ao Nori'],3:['Três marcas de corda no pescoço do Otávio','Vem junto com a nota fiscal (ligação da Helena)'],
+ 4:['Bilhete: "O último Medeiros paga a corda. 20/9"','Largo da Forca: bata 3 vezes na capela e fale com a mestra Sarah'],5:['Laudo: corda com mais de 150 anos','Delegacia: olhe o arquivo de aço durante a distração do Pedro'],6:['As 4 vítimas compraram livros sobre o Largo da Forca','Delegacia: olhe o mural durante a distração do Pedro'],
+ 7:['Caderno de 1954 do vô José Marcelino','Porão: olhe as caixas de livros'],8:['Três nós e MEDEIROS 1821 na parede','Porão: use a vela acesa na parede do fundo'],9:['Recorte de 1954: Antônio Medeiros enforcado','IML: fale com a Dra. Helena'],
  10:['Cartas do carrasco Joaquim Medeiros','Baú: olhe as cartas'],11:['Diário do vô: a Irmandade quer o último Medeiros','Baú: olhe o diário'],12:['Retrato de Joaquim Medeiros, 1821','Baú: olhe o retrato'],13:['Pedaço da corda original','Baú: pegue a corda']};
 $('#pistas').onclick=async e=>{e.stopPropagation();if(busy||dlgResolve)return;busy=true;
   let h=`<div class="title" style="font-size:22px">PISTAS ${S.pistas.length}/${PISTAS}</div><div style="text-align:left;font-size:25px;line-height:1.15;max-width:900px;margin:14px auto">`;
@@ -701,7 +740,7 @@ async function final(){
   await say('izabel','Elas começaram, não foi? Vem pra Praia Grande. Hoje.');
   SFX.bell();
   S.flags.ligacao=1;salvar();
-  await narr('Redação do Notícias Populares e Praia Grande liberadas no táxi do Seu Valdir.');
+  await narr('IML e Praia Grande liberados no táxi do Seu Valdir.');
   await fadeTo('sebo');
 }
 async function fimCap1(){
