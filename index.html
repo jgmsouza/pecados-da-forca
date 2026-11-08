@@ -499,14 +499,13 @@ async function abrirBau(){if(S.flags.bauAberto)return fadeTo('bau');
 SC.bau={amb:'casa-vo',img:'bauaberto',noWalk:1,
   exits:[{l:'Fechar',r:[0,580,170,107],to:'sala'}],
   hots:[
-    {l:'Cartas antigas',r:[155,250,240,260],olhar:async()=>{await narr('Cartas de 1821, assinadas por Joaquim Medeiros: "A corda arrebentou três vezes. O povo pediu perdão. Na quarta, cumpri a ordem."');await pista(10,'um Medeiros foi o carrasco do Chaguinhas.');await checkBau()},pegar:async()=>SC.bau.hots[0].olhar()},
-    {l:'Diário do vô',r:[330,185,215,285],olhar:async()=>{await narr('Diário do vô José Marcelino: "A Irmandade dos Três Nós voltou. Querem o sangue do último Medeiros para fechar o ritual num 20 de setembro."');await pista(11,'a Irmandade dos Três Nós quer o sangue do último Medeiros.');await checkBau()},pegar:async()=>SC.bau.hots[1].olhar()},
-    {l:'Desenho dos três nós',r:[465,310,225,210],olhar:'Os três nós a carvão. Embaixo, na letra do vô: "Um nó para cada vez que a corda arrebentou."'},
-    {l:'Retrato antigo',r:[635,135,185,210],olhar:async()=>{if(!S.pistas.includes(12)){await narr('"Joaquim Medeiros, 1821". O carrasco.');await scare(1,'Ele tem os seus olhos.');await pista(12,'o retrato do carrasco Joaquim Medeiros, de 1821.')}else await narr('Os mesmos olhos. Prefiro não encarar.');await checkBau()}},
-    {l:'Corda',r:[640,330,225,190],olhar:'Um rolo de corda velha de cânhamo.',pegar:async()=>{if(has('corda'))return G('Já está comigo.');give('corda');await pista(13,'um pedaço da corda original do Largo da Forca.');await checkBau()}},
-    {l:'Vela',r:[205,140,70,135],olhar:'A vó acendeu essa vela dentro do baú. "Pra luz não deixar ele fugir", ela disse.'}
+    {l:'Cartas antigas',r:[80,225,295,325],olhar:async()=>{await narr('Cartas de 1821, assinadas por Joaquim Medeiros: "A corda arrebentou três vezes. O povo pediu perdão. Na quarta, cumpri a ordem."');await pista(10,'um Medeiros foi o carrasco do Chaguinhas.');await checkBau()},pegar:async()=>SC.bau.hots[0].olhar()},
+    {l:'Diário do vô',r:[290,140,262,330],olhar:async()=>{await narr('Diário do vô José Marcelino: "A Irmandade dos Três Nós voltou. Querem o sangue do último Medeiros para fechar o ritual num 20 de setembro."');await pista(11,'a Irmandade dos Três Nós quer o sangue do último Medeiros.');await checkBau()},pegar:async()=>SC.bau.hots[1].olhar()},
+    {l:'Desenho dos três nós',r:[455,292,280,262],olhar:'Os três nós a carvão. Embaixo, na letra do vô: "Um nó para cada vez que a corda arrebentou."'},
+    {l:'Retrato antigo',r:[665,70,232,270],olhar:async()=>{if(!S.pistas.includes(12)){await narr('No verso: "Joaquim Medeiros, 1821". O carrasco. O rosto é quase o do vô José Marcelino.');await scare(1,'Ele tem os seus olhos.');await pista(12,'o retrato do carrasco Joaquim Medeiros, de 1821.')}else await narr('Os mesmos olhos. Prefiro não encarar.');await checkBau()}},
+    {l:'Corda',r:[665,340,290,215],olhar:'Um rolo de corda velha de cânhamo.',pegar:async()=>{if(has('corda'))return G('Já está comigo.');give('corda');await pista(13,'um pedaço da corda original do Largo da Forca.');await checkBau()}}
   ],
-  async enter(){if(!S.flags.bauVisto){S.flags.bauVisto=1;await narr('Dentro do baú: cartas, um diário, um retrato, um desenho e um rolo de corda velha.')}}
+  async enter(){if(!S.flags.bauVisto){S.flags.bauVisto=1;await narr('Dentro do baú: cartas amarradas, um diário, um desenho, um retrato antigo e um rolo de corda velha.')}}
 };
 async function checkBau(){if(S.flags.fim)return;if([10,11,12,13].every(n=>S.pistas.includes(n))){await G('Meu sangue é o que eles querem pra terminar o que começou em 1821.');await fimCap1()}}
 
