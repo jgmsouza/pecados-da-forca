@@ -404,7 +404,8 @@ async function sarahBilhete(){if(S.flags.bilhete)return say('sarah','Já te dei 
   await G('Vinte de setembro... o dia em que enforcaram o Chaguinhas.');
 }
 SC.delegacia={amb:'delegacia',img:'delegacia',f:'none',base:687,gh:410,range:[150,330],start:260,rain:.04,
-  sprites:()=>{const a=[{id:'pedro',img:'pg_0',x:60,y:687,h:395,anim:'pedro'}];if(!(S.flags.distr>0))a.push({id:'andre',img:'anc0',x:688,y:648,h:330,flip:1,anim:'andre',clip:47});return a},
+  sprites:()=>{const a=[{id:'pedro',img:'pg_0',x:60,y:687,h:395,anim:'pedro'}];if(!(S.flags.distr>0))a.push({id:'andre',img:'anc0',x:770,y:640,h:345,flip:1,anim:'andre'});return a},
+  fg:{img:'delegacia_fg',x:480,y:515},
   hots:[
     {l:'Janela',r:[0,140,230,270],x:250,olhar:'Grade e garoa. A vista mais honesta da cidade.'},
     {l:'Arquivo de aço',r:[300,240,195,320],olhar:async()=>{if(!(S.flags.distr>0))return G('O André está de olho. Preciso de uma distração.');await narr('Pasta "CASO CORDA". O laudo diz: fibra de cânhamo com mais de 150 anos.');await pista(5,'a corda dos crimes tem mais de 150 anos.')},
@@ -554,6 +555,7 @@ function renderSprites(){
     if(c.npc&&c.npc[sp.id]){im._t={...c.npc[sp.id],x:sp.x,npc:1};im.onclick=e=>{e.stopPropagation();act({...c.npc[sp.id],x:sp.x,npc:1})};im.onmouseenter=()=>sentence(c.npc[sp.id].l);im.onmouseleave=()=>sentence()}
     if(sp.anim){im._anim=sp.anim;runAnim(im)}
     box.appendChild(im)});
+  if(c.fg){const f=new Image();f.src=IMG(c.fg.img);f.style.cssText=`position:absolute;left:${c.fg.x}px;top:${c.fg.y}px;pointer-events:none;image-rendering:pixelated`;box.appendChild(f)}
   gEl=null;
   if(!c.noWalk){
     if(c.follow){const f=new Image();f.src=IMG(S.scene==='porao'?'tl4':'ta0');f.className='spr idle';f.id='f1';f.style.height=(c.gh*.30)+'px';box.appendChild(f)}
