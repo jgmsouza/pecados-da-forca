@@ -53,9 +53,7 @@ body{font-family:'VT323',monospace;color:var(--ink)}
 .spr.flash{outline:3px dashed var(--gold)}
 .exit{position:absolute;font-family:'Press Start 2P';font-size:15px;color:var(--gold);text-shadow:2px 2px 0 #000;display:flex;align-items:flex-end;justify-content:flex-start;padding:10px;pointer-events:none}
 #dark{position:absolute;inset:0;pointer-events:none;display:none}
-#rain{position:absolute;inset:0;pointer-events:none;display:none;opacity:.22;
- background-image:repeating-linear-gradient(105deg,transparent 0 22px,rgba(200,220,255,.7) 22px 23px,transparent 23px 47px);
- background-size:200px 200px;animation:rain .35s linear infinite}
+#rain{position:absolute;left:0;top:0;width:1024px;height:687px;pointer-events:none;display:none}
 @keyframes rain{to{background-position:-40px 200px}}
 #scene.lowsan #bg{animation:sway 4s ease-in-out infinite}
 #scene.lowsan::after{content:'';position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 160px rgba(120,0,0,.65)}
@@ -115,7 +113,7 @@ body{font-family:'VT323',monospace;color:var(--ink)}
 
 #capa{position:fixed;left:0;top:0;width:1324px;height:687px;overflow:hidden;background:#000;text-align:left}
 #capa .cbg{position:absolute;left:0;top:-120px;width:1324px;image-rendering:pixelated}
-#capa .rain2{position:absolute;inset:0;opacity:.12;background-image:repeating-linear-gradient(105deg,transparent 0 22px,rgba(200,220,255,.7) 22px 23px,transparent 23px 47px);background-size:200px 200px;animation:rain .3s linear infinite}
+#capa .rain2{position:absolute;left:0;top:0;width:1324px;height:687px;pointer-events:none}
 #capa .glow{position:absolute;left:820px;top:170px;width:140px;height:220px;background:radial-gradient(ellipse,rgba(170,20,20,.45),transparent 70%);animation:pulse 3s ease-in-out infinite}
 @keyframes pulse{50%{opacity:.4}}
 #capa .noose{position:absolute;left:868px;top:282px;transform-origin:16px 0;animation:swing 4.5s ease-in-out infinite;filter:drop-shadow(0 0 6px rgba(0,0,0,.9))}
@@ -136,7 +134,7 @@ body{font-family:'VT323',monospace;color:var(--ink)}
 #intro{position:fixed;left:0;top:0;width:1324px;height:687px;background:#000;z-index:40;overflow:hidden;display:none;cursor:pointer}
 #intro.on{display:block}
 #intro .ib{position:absolute;inset:0;background:center/cover no-repeat;opacity:0;image-rendering:pixelated}
-#intro .ir{position:absolute;inset:0;opacity:.14;background-image:repeating-linear-gradient(105deg,transparent 0 22px,rgba(200,220,255,.7) 22px 23px,transparent 23px 47px);background-size:200px 200px;animation:rain .3s linear infinite}
+#intro .ir{position:absolute;left:0;top:0;width:1324px;height:687px;pointer-events:none}
 #intro .ifl{position:absolute;inset:0;background:#e8eeff;opacity:0;mix-blend-mode:screen}
 #intro .itx{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;color:#d8d2c0;opacity:0;transition:opacity 1.2s;font-family:'VT323',monospace;font-size:40px;letter-spacing:3px;line-height:1.25;text-shadow:0 0 10px #000}
 #intro .itx small{display:block;font-size:26px;color:#8e98a4;letter-spacing:6px;margin-bottom:10px}
@@ -159,7 +157,7 @@ body{font-family:'VT323',monospace;color:var(--ink)}
     <img id="raio" alt="" style="position:absolute;left:580px;top:100px;display:none;pointer-events:none;image-rendering:pixelated">
     <div id="hots"></div>
     <div id="sprites"></div>
-    <div id="rain"></div>
+    <canvas id="rain" width="1024" height="687"></canvas>
     <div id="flashw" style="position:absolute;inset:0;background:#dfe8ff;opacity:0;pointer-events:none;mix-blend-mode:screen"></div>
     <div id="dark"></div>
     <div id="hudl"><div id="money"></div><div id="pistas"></div><div id="timer"></div></div>
@@ -186,7 +184,7 @@ body{font-family:'VT323',monospace;color:var(--ink)}
     </div>
   </div>
   <div id="ov"><div id="ovbg"></div><div id="ovc"></div></div>
-  <div id="intro"><div class="ib"></div><div class="ir"></div><div class="ifl"></div><div class="itx"></div><div class="ititle"><div class="a">OS PECADOS</div><div class="b">DA FORCA</div></div><div class="iskip">PULAR ▶</div></div>
+  <div id="intro"><div class="ib"></div><canvas class="ir" width="1324" height="687"></canvas><div class="ifl"></div><div class="itx"></div><div class="ititle"><div class="a">OS PECADOS</div><div class="b">DA FORCA</div></div><div class="iskip">PULAR ▶</div></div>
 </div>
 <img id="ghost" alt="">
 <script>
@@ -828,6 +826,21 @@ function cadeado(){return new Promise(res=>{const d=[0,0,0,0];
     $('#ovc').querySelector('[data-x]').onclick=e=>{e.stopPropagation();closeOv();res(null)}};draw()})}
 
 
+/* ---------------- CHUVA ---------------- */
+const RAIN={drops:new Map(),
+  get(cv,n){if(!this.drops.has(cv)){const W=cv.width,H=cv.height,a=[];for(let i=0;i<n;i++)a.push(this.nd(W,H,true));this.drops.set(cv,{a,sp:[]})}return this.drops.get(cv)},
+  nd(W,H,any){const z=Math.random();return{x:Math.random()*(W+200)-100,y:any?Math.random()*H:-30-Math.random()*200,l:8+z*22,v:9+z*15,o:.10+z*.30,w:.6+z*1.1,z}},
+  frame(){document.querySelectorAll('canvas#rain,canvas.rain2,canvas.ir').forEach(cv=>{if(!cv.isConnected||cv.offsetParent===null&&getComputedStyle(cv).position!=='fixed'){}
+      const vis=cv.getClientRects().length>0&&getComputedStyle(cv).display!=='none';if(!vis)return;
+      const ctx=cv.getContext('2d'),W=cv.width,H=cv.height,st=this.get(cv,cv.id==='rain'?260:340);ctx.clearRect(0,0,W,H);ctx.lineCap='round';
+      for(const d of st.a){d.y+=d.v;d.x+=d.v*0.22;
+        if(d.y>H*(0.78+d.z*0.22)){if(d.z>.5&&Math.random()<.5)st.sp.push({x:d.x,y:d.y,t:0});Object.assign(d,this.nd(W,H,false))}
+        ctx.strokeStyle=`rgba(190,205,235,${d.o})`;ctx.lineWidth=d.w;ctx.beginPath();ctx.moveTo(d.x,d.y);ctx.lineTo(d.x-d.l*0.22,d.y-d.l);ctx.stroke()}
+      ctx.strokeStyle='rgba(200,215,240,.25)';ctx.lineWidth=1;
+      st.sp=st.sp.filter(p=>{p.t++;const r=p.t*1.4;ctx.beginPath();ctx.ellipse(p.x,p.y,r,r*.3,0,0,Math.PI*2);ctx.stroke();return p.t<6})});
+    requestAnimationFrame(()=>this.frame())}};
+requestAnimationFrame(()=>RAIN.frame());
+
 /* ---------------- ABERTURA ---------------- */
 let introSkip=false;
 const isl=ms=>new Promise(r=>{const t0=performance.now();const f=()=>{if(introSkip||performance.now()-t0>=ms)r();else setTimeout(f,40)};f()});
@@ -862,7 +875,7 @@ async function inicio(first){
     if(!visto)await abertura();else I.classList.remove('on')}
   SFX.amb('musica');
   const sv=carregar();
-  const k=await overlay(`<div id="capa"><img class="cbg" src="${IMG('capa')}"><div class="rain2"></div><div class="flash"></div>
+  const k=await overlay(`<div id="capa"><img class="cbg" src="${IMG('capa')}"><canvas class="rain2" width="1324" height="687"></canvas><div class="flash"></div>
     <div class="tit"><div class="t1">OS PECADOS</div><div class="t2">DA <span>FORCA</span></div><div class="knots"><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg></div><div class="sub">São Paulo · 1994<br>Capítulo 1: A Corda que Não Arrebenta</div></div>
     <div class="menu">${sv&&!sv.flags.fim?'<div class="btn" data-k="c">CONTINUAR</div>':''}<div class="btn" data-k="n">NOVO JOGO</div><div class="btn small" data-k="a" style="min-width:200px;font-size:11px">VER ABERTURA</div></div>
     <div class="hint">Melhor com som e com o celular deitado</div></div>`,null);
