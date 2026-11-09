@@ -309,12 +309,12 @@ SC.sebo={img:'sebo',f:'brightness(1.28) saturate(.85) contrast(.95)',base:687,gh
   ],
   npc:{
     nathalia:{l:'Nathalia',olhar:'Nathalia. Lê latim melhor que eu leio cardápio.',
-      falar:async()=>{if(!S.flags.nota){await say('nathalia','Alguém arrancou a folha do dia da venda. E não fui eu.');await say('nathalia','Mas eu vi um papel caindo debaixo da estante baixa. Só o Nori passa naquele vão.');await G('E o Nori só trabalha com pagamento adiantado.')}
+      falar:async()=>{if(!S.flags.nota){if(!S.flags.nath1){S.flags.nath1=1;await say('nathalia','Polícia aqui de madrugada? Guilherme, o que tá acontecendo?');const r=await escolha(['Preciso de você nessa, Nathalia. Você lê coisa velha melhor que ninguém.','Não é nada. Volta pro trabalho que eu resolvo sozinho.']);if(r===0){rel('nathalia',1);await G('Preciso de você nessa, Nathalia.');await say('nathalia','Finalmente alguém reconhece meu latim.')}else{rel('nathalia',-1);await G('Não é nada. Volta pro trabalho que eu resolvo sozinho.');await say('nathalia','Tá. Sozinho. Como sempre.')}}await say('nathalia','Alguém arrancou a folha do dia da venda. E não fui eu.');await say('nathalia','Mas eu vi um papel caindo debaixo da estante baixa. Só o Nori passa naquele vão.');await G('E o Nori só trabalha com pagamento adiantado.')}
         else if(!has('velaacesa')){await say('nathalia','Capela dos Aflitos, no Largo da Forca... do lado tem a academia da mestra Sarah. Dizem que ela cuida dos bilhetes da capela.');await say('nathalia','Se o porão estiver escuro, leva fogo. A luz de lá queimou faz meses.')}
         else await say('nathalia','Vai descer no porão? Leva a Tiana. Ela sente essas coisas.')},
       usar:async it=>{if(it==='nota')return say('nathalia','"3 batidas"... é o pedido da Capela dos Aflitos.');if(it==='bilhete'){await say('nathalia','Essa letra... é a mesma das anotações do seu avô nos livros do porão.');return}return say('nathalia','Não sei o que fazer com isso.')}},
     pedro:{l:'Pedro',olhar:'Pedro, o estagiário. Walkman no pescoço, chave na mão, culpa na cara.',
-      falar:async()=>{if(!S.flags.pedro1){S.flags.pedro1=1;await say('pedro','Fui eu que vendi o livro... mas o cara pediu ele pelo nome. Nem olhou a estante.');await say('pedro','E tinha cheiro de vela. Muito cheiro de vela.')}
+      falar:async()=>{if(!S.flags.pedro1){S.flags.pedro1=1;await say('pedro','Fui eu que vendi o livro... mas o cara pediu ele pelo nome. Nem olhou a estante.');await say('pedro','E tinha cheiro de vela. Muito cheiro de vela.');const r=await escolha(['Tudo bem, Pedro. Eu confio em você.','Você vendeu o livro pra um morto e não me contou nada?']);if(r===0){rel('pedro',1);await G('Tudo bem, Pedro. Eu confio em você.');await say('pedro','Valeu, chefe. Juro que não sabia de nada.')}else{rel('pedro',-1);await G('Você vendeu o livro pra um morto e não me contou nada?');await say('pedro','Eu não sabia que ele ia morrer, pô! ...Tá bom, devia ter falado.')}}
         else if(S.flags.capela&&!S.flags.dp)await say('pedro','Se precisar entrar em algum lugar onde não deixam, me leva. Sou desastrado profissional.');
         else await say('pedro','Tô aqui, chefe. Tá tocando Legião no walkman, então tô em paz.')}},
     nori:{l:'Nori',olhar:()=>S.flags.noriVolta?narr('Nori, satisfeito, com bafo de petisco.'):narr('Nori. Finge que não está de olho no pote de petiscos.'),
@@ -516,14 +516,14 @@ SC.sala={amb:'casa-vo',img:'sala',sf:'brightness(.72) saturate(.85)',base:665,gh
     {l:'Baú',r:[803,380,180,137],x:780,olhar:'Baú de madeira com cintas de ferro. Um cadeado de 4 números.',any:async()=>abrirBau()}
   ],
   npc:{izabel:{l:'Vó Maria Izabel',olhar:'Vó Maria Izabel. O terço não sai da mão dela.',
-    falar:async()=>{if(S.san<10&&!S.flags.rezou)return rezar();if(S.flags.bauAberto)return say('izabel','Seu avô carregou isso sozinho a vida inteira. Agora é com você, meu neto.');
+    falar:async()=>{if(S.san<10&&!S.flags.rezou&&!S.flags.recusouReza)return rezar();if(S.flags.bauAberto)return say('izabel','Seu avô carregou isso sozinho a vida inteira. Agora é com você, meu neto.');
       await say('izabel','O cadeado tem quatro números. Seu avô dizia que a senha era "a data que condena os Medeiros".');
       if(S.flags.recorte)await say('izabel','O dia em que levaram o Antônio... e o dia em que enforcaram aquele moço, o Chaguinhas.');
       else await say('izabel','Tem coisa no jornal daquela época. Sua amiga fotógrafa pode achar.')},
     usar:async it=>{if(it==='bilhete')return say('izabel','É a letra do seu avô, sim. Vinte do nove... sempre essa data.');if(it==='recorte')return say('izabel','O Antônio... irmão do seu avô. Eu era mocinha. Vinte de setembro.');return say('izabel','Guarda isso, meu filho.')}}},
   async enter(){if(!S.flags.vo){S.flags.vo=1;await say('izabel','Guilherme! Entra, meu filho, tá encharcado.');await say('izabel','O baú do seu avô está ali no canto. A Tiana late pra ele desde que ele morreu.');await G('Vó... o que tem nesse baú?');await say('izabel','A verdade sobre o nosso sobrenome. E eu nunca tive coragem de abrir.');await rezar()}}
 };
-async function rezar(){if(S.san>=10||S.flags.rezou)return;S.flags.rezou=1;await say('izabel','Vem cá, meu neto. Deixa a vó rezar por você. Você está com os olhos de quem viu coisa.');SFX.bell();await narr('Ela segura suas mãos com o terço e reza baixinho. O peito fica mais leve.');S.san=Math.min(10,S.san+4);drawHud();toast('SANIDADE +4')}
+async function rezar(){if(S.san>=10||S.flags.rezou||S.flags.recusouReza)return;await say('izabel','Vem cá, meu neto. Deixa a vó rezar por você. Você está com os olhos de quem viu coisa.');const r=await escolha(['Reza por mim, vó.','Não dá tempo, vó. Só preciso abrir o baú.']);if(r===1){S.flags.recusouReza=1;rel('izabel',-1);await G('Não dá tempo, vó. Só preciso abrir o baú.');await say('izabel','Tá bom, meu filho. Mas a vó reza mesmo assim, quando você sair.');return}rel('izabel',1);await G('Reza por mim, vó.');S.flags.rezou=1;SFX.bell();await narr('Ela segura suas mãos com o terço e reza baixinho. O peito fica mais leve.');S.san=Math.min(10,S.san+4);drawHud();toast('SANIDADE +4')}
 async function abrirBau(){if(S.flags.bauAberto)return fadeTo('bau');
   const c=await cadeado();if(c===null)return;
   if(c!=='2009'){SFX.tone(140,.25,'square',.12);S.flags.errosBau=(S.flags.errosBau||0)+1;await narr(`${c}... o cadeado não abre.`);if(S.flags.errosBau>=2)await G('Quatro números... dia e mês. Dois dígitos pro dia, dois pro mês.');else await G('A data que condena os Medeiros... dia e mês.');if(S.flags.errosBau>=3&&!S.flags.dica2009)await say('izabel','Seu avô escreveu alguma coisa atrás do retrato dele, ali na parede. Dá uma olhada.');return}
@@ -612,8 +612,8 @@ const GSEQ={
   coca:['gic',[[2,250],[3,1100],[2,250],[0,10]]],
   joinha:['gib',[[2,200],[3,200],[4,1000],[3,200],[0,10]]]};
 Object.entries(GSEQ).forEach(([k,[set,fr]])=>fr.forEach(([i])=>{const im=new Image();im.src=IMG(set+i)}));
-async function gesto(nome){if(!gEl||gEl.classList.contains('walking'))return;const [set,fr]=GSEQ[nome];const tok=++gTok;const gi=gEl.querySelector('.gid');gi.dataset.set=set;placeG();
-  gEl.classList.add('idleanim');for(const [i,ms] of fr){if(tok!==gTok)return;gi.src=IMG(set+i);await sleep(ms)}if(tok===gTok)gEl.classList.remove('idleanim')}
+async function gesto(nome){if(!gEl||!gEl.isConnected||gEl.classList.contains('walking'))return;const [set,fr]=GSEQ[nome];const tok=++gTok;const gi=gEl.querySelector('.gid');gi.dataset.set=set;placeG();
+  gEl.classList.add('idleanim');for(const [i,ms] of fr){if(tok!==gTok||!gEl)return;gi.src=IMG(set+i);await sleep(ms)}if(tok===gTok&&gEl)gEl.classList.remove('idleanim')}
 setInterval(()=>{if(!S||busy||!gEl||gEl.classList.contains('walking')||$('#ov').classList.contains('on'))return;if(Math.random()<.45)gesto(['relogio','maos','queixo'][Math.random()*3|0])},5000);
 /* arrastar itens */
 let drag=null;
@@ -753,6 +753,9 @@ async function fimCap1(){
   await narr('O telefone da sala toca. A vó atende e te passa o fone, pálida.');
   await say('nathalia','Guilherme! Levaram o Pedro! Arrombaram o sebo e deixaram três nós desenhados na porta!');
   await G('Vinte de setembro... eles querem o último Medeiros. E vão usar o Pedro pra me buscar.');
+  const r=await escolha(['Nathalia, liga pra delegada Joana. Agora.','Não chama a polícia. Eu vou atrás deles sozinho.']);
+  if(r===0){S.flags.policia=1;await G('Nathalia, liga pra delegada Joana. Agora.');await say('nathalia','Tô ligando. Volta logo, Guilherme.')}
+  else{S.flags.policia=0;await G('Não chama a polícia. Eu vou atrás deles sozinho.');await say('nathalia','Sozinho de novo? Você é teimoso igual ao Nori.')}
   SFX.bell();S.flags.fim=1;salvar();SFX.amb('musica');
   await overlay(`<div class="title">FIM DO<br>CAPÍTULO 1</div><div class="sub">A Corda que Não Arrebenta</div>
     <p>Pistas: ${S.pistas.length}/${PISTAS} · Vida: ${S.vida}/10 · Sanidade: ${S.san}/10</p>
