@@ -321,7 +321,7 @@ function escolha(ops){return dq=dq.then(()=>tip('escolha','ESCOLHAS','Escolha um
 function say(who,txt){dq=dq.then(()=>show(who,txt));return dq}
 function show(who,txt){let held=null;const pa=portAnim(who,txt);if(who){anim(who);const el=document.querySelector(`.spr[data-id="${who}"]`);if(el&&el._anim){held=el;el._hold=ANIMS[el._anim].talk;el.src=IMG(el._hold)}}
   return new Promise(r0=>{const res=()=>{if(held)held._hold=null;pa();r0()};const d=$('#dlg');d.classList.toggle('narr',!who);const p=$('#por');
-  p.innerHTML='';if(who&&['guilherme','nathalia','pedro','sarah','helena','joana','andre','izabel'].includes(who)){p.className='';p.style.backgroundImage=`url(${IMG('p_'+who)})`}else p.className='none';
+  p.innerHTML='';if(who&&['guilherme','nathalia','pedro','sarah','helena','joana','andre','izabel','theo','chico','barros'].includes(who)){p.className='';p.style.backgroundImage=`url(${IMG('p_'+who)})`}else p.className='none';
   $('#dname').textContent=who?PERS[who]:'';$('#dname').style.display=who?'block':'none';$('#dline').textContent=who?'"'+txt+'"':txt;d.classList.add('on');dlgResolve=res})}
 const narr=t=>say(null,t);
 const G=t=>say('guilherme',t);
