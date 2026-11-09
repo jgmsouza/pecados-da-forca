@@ -261,7 +261,7 @@ function flashRed(){const f=$('#fade');f.style.background='#600';f.style.opacity
 // rects em px na imagem 1024x687
 const SC={};
 SC.abertura={img:'sebo',f:'brightness(.62) saturate(.8)',base:687,gh:390,range:[150,860],start:230,rain:.08,
-  sprites:()=>S.flags.joanaIn?[{id:'joana',img:'job0',x:690,y:687,h:395,flip:1,anim:'joana'}]:[],
+  sprites:()=>S.flags.joanaIn?[{id:'joana',img:'joa0',x:690,y:687,h:395,flip:1,anim:'joana'}]:[],
   hots:[
     {l:'Porta da frente',r:[150,115,320,265],x:330,any:async()=>{await abrirJoana()},olhar:'A porta da frente fica ao lado da vitrine. Alguém bateu três vezes. À meia-noite.'},
     {l:'Máquina de escrever',r:[135,400,75,50],olhar:'Página 213 do meu romance. Faz três semanas que ela não sai do lugar.',pegar:'Pesada demais. E eu nem estou escrevendo.'},
@@ -582,7 +582,7 @@ const ANIMS={
   nathC:{talk:'nc0',seq:()=>[['nc0',3200],['nc1',280],['nc2',280],['nc3',420],['nc2',280],['nc3',420],['nc4',1600],['nc5',300],['nc6',300],['nc7',2400]]},
   pedro:{talk:'pg_0',seq:()=>[['pg_0',2500],['pg_4',1300],['pg_0',800],['pg_3',1600],['pf2',1800],['pf3',2400],['pf2',600],['pf1',380],['pf0',2600],['pf1',300],['pf2',1000],['pg_6',1300],['pg_5',900]]},
   andre:{talk:'ang0',seq:()=>[['anc0',2000],['anc1',700],['anc2',600],['anc3',900],['anc4',1500],['anc0',1500],['ang2',2000],['ang5',1200],['anc0',1500],['anc5',800]]},
-  joana:{talk:'joa1',seq:()=>[['job0',1500],['job1',2500],['job0',800],['job2',1500],['joa3',1200],['joa4',2500],['joa7',1500]]},
+  joana:{talk:'joa1',seq:()=>[['joa0',2200],['job2',1400],['joa0',700],['joa3',1600],['joa4',1200],['joa5',2400],['joa0',800],['joa7',1800],['job5',1100]]},
   sarah:{talk:'sh1',seq:()=>{const a=[];for(let k=0;k<3;k++)a.push(['sg0',330],['sg1',330],['sg2',330],['sg3',330]);a.push(['sg4',2000],['sc1',400],['sc2',600],['sc3',800],['sc5',1500],['sh2',2500],['sh3',1000]);return a}},
   helena:{talk:'heb0',seq:()=>[['hea0',1500],['hea4',2000],['hea1',1500],['hea2',900],['hea3',1500],['heb5',1200],['heb2',1800],['heb7',2000]]},
   izabel:{talk:'ig0',seq:()=>[['ir0',700],['ir1',700],['ir2',700],['ir3',700],['ir4',700],['ir5',700],['ir6',700],['ir7',700],['ig2',1500],['ig4',1500],['ig1',1000]]}
