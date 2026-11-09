@@ -403,8 +403,8 @@ async function sarahBilhete(){if(S.flags.bilhete)return say('sarah','Já te dei 
   await pista(4,'"O último Medeiros paga a corda. 20/9". O bilhete é antigo.');
   await G('Vinte de setembro... o dia em que enforcaram o Chaguinhas.');
 }
-SC.delegacia={amb:'delegacia',img:'delegacia',f:'none',base:687,gh:410,range:[230,820],start:330,rain:.04,
-  sprites:()=>{const a=[{id:'pedro',img:'pg_0',x:140,y:687,h:395,anim:'pedro'}];if(!(S.flags.distr>0))a.push({id:'andre',img:'anc0',x:900,y:687,h:415,flip:1,anim:'andre'});return a},
+SC.delegacia={amb:'delegacia',img:'delegacia',f:'none',base:687,gh:410,range:[150,330],start:260,rain:.04,
+  sprites:()=>{const a=[{id:'pedro',img:'pg_0',x:60,y:687,h:395,anim:'pedro'}];if(!(S.flags.distr>0))a.push({id:'andre',img:'anc0',x:688,y:648,h:330,flip:1,anim:'andre',clip:47});return a},
   hots:[
     {l:'Janela',r:[0,140,230,270],x:250,olhar:'Grade e garoa. A vista mais honesta da cidade.'},
     {l:'Arquivo de aço',r:[300,240,195,320],olhar:async()=>{if(!(S.flags.distr>0))return G('O André está de olho. Preciso de uma distração.');await narr('Pasta "CASO CORDA". O laudo diz: fibra de cânhamo com mais de 150 anos.');await pista(5,'a corda dos crimes tem mais de 150 anos.')},
@@ -462,8 +462,8 @@ SC.parede={amb:'porao',img:'parede',f:'none',noWalk:1,hots:[],
   }
 };
 
-SC.iml={amb:'delegacia',img:'iml',base:655,gh:340,range:[150,640],start:300,
-  sprites:()=>[{id:'helena',img:'hea0',x:700,y:560,h:300,flip:1,anim:'helena'}],
+SC.iml={amb:'delegacia',img:'iml',base:568,gh:285,range:[560,700],start:600,
+  sprites:()=>[{id:'helena',img:'hea0',x:790,y:562,h:275,flip:1,anim:'helena'}],
   hots:[
     {l:'Corpo coberto',r:[0,390,265,170],x:240,olhar:async()=>{if(!S.flags.recorte)return helenaCorpo();await narr('Melhor deixar o Otávio descansar.')}},
     {l:'Mesa de autópsia',r:[215,425,355,70],olhar:'Aço frio. Limpa demais.'},
@@ -549,6 +549,7 @@ function renderSprites(){
   const list=c.sprites?c.sprites():[];
   list.forEach(sp=>{const im=new Image();im.src=IMG(sp.img);im.className='spr'+(c.npc&&c.npc[sp.id]?' npc':'');im.dataset.id=sp.id;
     im.style.height=sp.h+'px';im.style.left=sp.x+'px';im.style.top=(sp.y-sp.h)+'px';im.style.transform=`translateX(-50%) scaleX(${sp.flip?-1:1})`;
+    if(sp.clip)im.style.clipPath=`inset(0 0 ${sp.clip}% 0)`;
     if(!sp.flip)im.style.setProperty('--fx','1');im.classList.add('idle');im.style.animationDelay=(-Math.random()*3)+'s';
     if(c.npc&&c.npc[sp.id]){im._t={...c.npc[sp.id],x:sp.x,npc:1};im.onclick=e=>{e.stopPropagation();act({...c.npc[sp.id],x:sp.x,npc:1})};im.onmouseenter=()=>sentence(c.npc[sp.id].l);im.onmouseleave=()=>sentence()}
     if(sp.anim){im._anim=sp.anim;runAnim(im)}
