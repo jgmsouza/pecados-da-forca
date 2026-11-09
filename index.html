@@ -640,17 +640,17 @@ async function liberar(flag,nome){if(S.flags[flag])return;S.flags[flag]=1;await 
 
 /* 1. Sebo arrombado */
 SC.sebo2={img:'sebo2',f:'brightness(1.12) saturate(.9)',base:687,gh:390,range:[150,860],start:240,rain:.04,
-  sprites:()=>{const a=[{...NATHPOSE.sit},{id:'nori',img:'nr0',x:150,y:648,h:70},{id:'tiana',img:'ta6',x:470,y:668,h:118},{id:'barros',img:'ba0',x:780,y:687,h:395,anim:'barros',flip:1}];
-    if(S.flags.policia)a.push({id:'joana',img:'joa0',x:640,y:687,h:395,flip:1,anim:'joana'});return a},
+  sprites:()=>{const a=[{...NATHPOSE.sit},{id:'nori',img:'nr0',x:150,y:648,h:70},{id:'tiana',img:'ta6',x:520,y:687,h:118},{id:'barros',img:'ba0',x:850,y:687,h:395,anim:'barros',flip:1}];
+    if(S.flags.policia)a.push({id:'joana',img:'joa0',x:715,y:687,h:395,flip:1,anim:'joana'});return a},
   hots:[
     {l:'Porta do porão arrombada',r:[895,165,129,430],x:840,olhar:async()=>{if(!S.flags.nosPorta){S.flags.nosPorta=1;SFX.sting();await narr('A porta do porão, arrombada de dentro pra fora. Três nós pintados nela, ainda pingando.');await scare(1,'Eles vieram por baixo. Pelo porão.')}else await narr('Arrombaram por baixo. Tem túnel debaixo do sebo.')},
       andar:async()=>{await G('Lá embaixo só tem o porão e um buraco novo na parede, tapado de entulho. Por aí eu não passo.')},usar:'Não tem mais o que abrir aí.'},
-    {l:'Nós na parede',r:[740,190,150,60],olhar:'Mais nós. Carvão molhado escorrendo pela parede.'},
-    {l:'Walkman no chão',r:[295,468,95,70],x:330,olhar:'O walkman do Pedro, caído na caminha do Nori. A fita ainda está girando.',pegar:async()=>pegarWalkman(),usar:async()=>pegarWalkman()},
-    {l:'Caixa revirada',r:[555,480,70,70],x:580,olhar:'Uma caixa de livros revirada. Debaixo dela, o boné vermelho do Pedro.',pegar:async()=>{if(has('bone')||S.flags.boneUsado)return G('Já peguei o boné.');give('bone');await G('O boné do Pedro. O Nori conhece esse cheiro.')}},
+    {l:'Nós na parede',r:[740,245,70,65],olhar:'Mais nós. Carvão molhado escorrendo pela parede.'},
+    {l:'Walkman no chão',r:[292,578,105,68],x:330,olhar:'O walkman do Pedro, caído na caminha do Nori. A fita ainda está girando.',pegar:async()=>pegarWalkman(),usar:async()=>pegarWalkman()},
+    {l:'Caixa revirada',r:[365,405,85,60],x:420,olhar:'Uma caixa de livros revirada. Debaixo dela, o boné vermelho do Pedro.',pegar:async()=>{if(has('bone')||S.flags.boneUsado)return G('Já peguei o boné.');give('bone');await G('O boné do Pedro. O Nori conhece esse cheiro.')}},
     {l:'Pote de petiscos',r:[620,40,62,66],x:640,olhar:'O pote de petiscos. Pelo menos esse ninguém levou.',pegar:async()=>{if(has('petisco'))return G('Um petisco já basta.');if(S.flags.petisco2)return G('O Nori já ganhou o dele hoje.');await narr('Subo na escada e pego um petisco.');give('petisco')}},
     {l:'Vitrine',r:[150,115,320,265],x:330,olhar:'Garoa. A rua está vazia. O Seu Eduardo espera com o Opala ligado (botão TÁXI).'},
-    {l:'Livros no chão',r:[420,560,340,100],olhar:'Não levaram nada de valor. Só o Pedro.',pegar:'Depois eu arrumo. Primeiro o Pedro.'}
+    {l:'Livros no chão',r:[455,450,110,110],olhar:'Não levaram nada de valor. Só o Pedro.',pegar:'Depois eu arrumo. Primeiro o Pedro.'}
   ],
   npc:{
     nathalia:{l:'Nathalia',olhar:'Nathalia, abraçada ao próprio casaco. Não dormiu.',
