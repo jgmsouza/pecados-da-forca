@@ -368,7 +368,7 @@ SC.capelafora={amb:'chuva',rua:1,img:'largo',f:'none',base:655,gh:300,range:[150
 };
 async function entrarAcademia(){SFX.fx('porta',.6);await fadeTo('capeladentro')}
 SC.capeladentro={amb:'capela',img:'capoeira',f:'none',base:665,gh:360,range:[220,860],start:330,rain:.03,follow:'tiana',
-  sprites:()=>[{id:'sarah',img:'sg4',x:525,y:588,h:300,anim:'sarah'}],
+  sprites:()=>[{id:'sarah',img:'sr0',x:525,y:588,h:300,anim:'sarah'}],
   exits:[{l:'Sair',r:[160,215,150,250],to:'capelafora'}],
   hots:[
     {l:'Altar com velas',r:[440,290,110,55],x:470,olhar:'Um altar pequeno com velas acesas para Nossa Senhora dos Aflitos. "Velas: CR$ 500", diz um papel.',
@@ -583,7 +583,7 @@ const ANIMS={
   pedro:{talk:'pg_0',seq:()=>[['pg_0',2500],['pg_4',1300],['pg_0',800],['pg_3',1600],['pf2',1800],['pf3',2400],['pf2',600],['pf1',380],['pf0',2600],['pf1',300],['pf2',1000],['pg_6',1300],['pg_5',900]]},
   andre:{talk:'ang0',seq:()=>[['anc0',2000],['anc1',700],['anc2',600],['anc3',900],['anc4',1500],['anc0',1500],['ang2',2000],['ang5',1200],['anc0',1500],['anc5',800]]},
   joana:{talk:'joa1',seq:()=>[['joa0',2200],['job2',1400],['joa0',700],['joa3',1600],['joa4',1200],['joa5',2400],['joa0',800],['joa7',1800],['job5',1100]]},
-  sarah:{talk:'sh1',seq:()=>{const a=[];for(let k=0;k<3;k++)a.push(['sg0',330],['sg1',330],['sg2',330],['sg3',330]);a.push(['sg4',2000],['sc1',400],['sc2',600],['sc3',800],['sc5',1500],['sh2',2500],['sh3',1000]);return a}},
+  sarah:{talk:'sr7',seq:()=>{const a=[['sr0',2500]];for(let k=0;k<3;k++)a.push(['sr1',420],['sr2',420],['sr3',300],['sr2',420],['sr1',420]);a.push(['sr0',1800],['sr4',1400],['sr0',900],['sr5',2600],['sr6',900],['sr0',1200]);return a}},
   helena:{talk:'heb0',seq:()=>[['hea0',1500],['hea4',2000],['hea1',1500],['hea2',900],['hea3',1500],['heb5',1200],['heb2',1800],['heb7',2000]]},
   izabel:{talk:'ig0',seq:()=>[['ir0',700],['ir1',700],['ir2',700],['ir3',700],['ir4',700],['ir5',700],['ir6',700],['ir7',700],['ig2',1500],['ig4',1500],['ig1',1000]]}
 };
