@@ -691,7 +691,7 @@ async function ouvirFita(nath){if(S.pistas.includes(1))return narr('Sinos do Mos
 
 /* 2. Mosteiro de São Bento */
 SC.mosteiro={img:'mosteiro',amb:'gregoriano|capela',f:'none',base:672,gh:385,range:[730,860],start:820,follow:'tiana',
-  sprites:()=>{const a=[{id:'theo',img:'th0',x:715,y:500,h:245,anim:'theo'}];if(S.flags.nathVem)a.push({id:'nathalia',img:'nm0',x:650,y:676,h:340,anim:'nathM'});return a},
+  sprites:()=>{const a=[{id:'theo',img:'th0',x:715,y:500,h:245,anim:'theo'}];if(S.flags.nathVem)a.push({id:'nathalia',img:'nm0',x:640,y:676,h:340,anim:'nathM',flip:1});return a},
   hots:[
     {l:'Códice na mesa',r:[180,480,190,85],x:600,olhar:()=>S.flags.arquivo?narr('O códice da Irmandade, trazido do arquivo proibido. Latim apertado, desenhos de três nós.'):narr('Um livro de orações. Nada sobre túneis.'),
       usar:async()=>latim(),pegar:async()=>latim()},
