@@ -114,24 +114,24 @@ body{font-family:'VT323',monospace;color:var(--ink)}
 #fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .35s;z-index:15}
 
 #capa{position:fixed;left:0;top:0;width:1324px;height:687px;overflow:hidden;background:#000;text-align:left}
-#capa .cbg{position:absolute;left:0;top:-121px;width:1324px;image-rendering:pixelated}
-#capa .rain2{position:absolute;inset:0;opacity:.28;background-image:repeating-linear-gradient(105deg,transparent 0 22px,rgba(200,220,255,.7) 22px 23px,transparent 23px 47px);background-size:200px 200px;animation:rain .3s linear infinite}
+#capa .cbg{position:absolute;left:0;top:-120px;width:1324px;image-rendering:pixelated}
+#capa .rain2{position:absolute;inset:0;opacity:.12;background-image:repeating-linear-gradient(105deg,transparent 0 22px,rgba(200,220,255,.7) 22px 23px,transparent 23px 47px);background-size:200px 200px;animation:rain .3s linear infinite}
 #capa .glow{position:absolute;left:820px;top:170px;width:140px;height:220px;background:radial-gradient(ellipse,rgba(170,20,20,.45),transparent 70%);animation:pulse 3s ease-in-out infinite}
 @keyframes pulse{50%{opacity:.4}}
 #capa .noose{position:absolute;left:868px;top:282px;transform-origin:16px 0;animation:swing 4.5s ease-in-out infinite;filter:drop-shadow(0 0 6px rgba(0,0,0,.9))}
 @keyframes swing{0%,100%{transform:rotate(5deg)}50%{transform:rotate(-5deg)}}
 #capa .flash{position:absolute;inset:0;background:#dfe8ff;opacity:0;mix-blend-mode:screen;animation:flash 9s infinite}
-@keyframes flash{0%,88%,100%{opacity:0}89%{opacity:.6}90%{opacity:0}91.5%{opacity:.35}93%{opacity:0}}
-#capa .tit{position:absolute;left:470px;top:34px;width:820px;text-align:center}
+@keyframes flash{0%,90%,100%{opacity:0}91%{opacity:.28}92%{opacity:0}93%{opacity:.15}94%{opacity:0}}
+#capa .tit{position:absolute;left:770px;top:40px;width:540px;text-align:center}
 #capa .t1{font-family:'Press Start 2P';font-size:30px;color:#cdbf9a;letter-spacing:10px;text-shadow:3px 3px 0 #000}
-#capa .t2{font-family:'Press Start 2P';font-size:64px;line-height:1.15;color:#e3d6b0;margin-top:10px;text-shadow:4px 4px 0 #3a0606,0 0 30px rgba(190,20,20,.55)}
+#capa .t2{font-family:'Press Start 2P';font-size:58px;line-height:1.15;color:#e3d6b0;margin-top:10px;text-shadow:4px 4px 0 #3a0606,0 0 30px rgba(190,20,20,.55)}
 #capa .t2 span{color:#b3201b;text-shadow:4px 4px 0 #000,0 0 26px rgba(220,30,30,.7)}
 #capa .knots{display:flex;justify-content:center;gap:18px;margin:16px 0 6px}
-#capa .sub{font-family:'VT323';font-size:30px;color:#9aa6b4;letter-spacing:2px}
-#capa .menu{position:absolute;left:1060px;top:520px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px}
+#capa .sub{font-family:'VT323';font-size:26px;color:#9aa6b4;letter-spacing:1px}
+#capa .menu{position:absolute;left:1120px;top:440px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px}
 #capa .menu .btn{min-width:320px;font-size:16px;background:linear-gradient(#3a2626,#211414);border-color:#7d4b4b #2a1010 #2a1010 #7d4b4b;color:#e8d8b8}
 #capa .menu .btn:hover{color:#ffd27a}
-#capa .hint{position:absolute;right:20px;bottom:12px;font-family:'VT323';font-size:22px;color:#6c7682}
+#capa .hint{position:absolute;right:20px;top:8px;font-family:VT323;font-size:20px;color:#6c7682}
 #rot{display:none;position:fixed;inset:0;background:#000;color:var(--ink);z-index:50;align-items:center;justify-content:center;text-align:center;font-family:'Press Start 2P';font-size:14px;line-height:2;padding:30px}
 </style>
 </head>
@@ -780,7 +780,7 @@ async function fimCap1(){
   await overlay(`<div class="title">FIM DO<br>CAPÍTULO 1</div><div class="sub">A Corda que Não Arrebenta</div>
     <p>Pistas: ${S.pistas.length}/${PISTAS} · Vida: ${S.vida}/10 · Sanidade: ${S.san}/10</p>
     <p style="font-size:28px;color:#d9c48a">Capítulo 2: O Subterrâneo — em breve</p>
-    <div class="btn" data-k="n">VOLTAR AO INÍCIO</div>`,'bauaberto');
+    <div class="btn" data-k="n">VOLTAR AO INÍCIO</div>`,'capa2');
   try{localStorage.removeItem('pecados_v1')}catch(e){}
   closeOv();inicio();
 }
@@ -813,8 +813,8 @@ function cadeado(){return new Promise(res=>{const d=[0,0,0,0];
 async function inicio(){
   fit();SFX.amb('musica');
   const sv=carregar();
-  const k=await overlay(`<div id="capa"><img class="cbg" src="${IMG('capa')}"><div class="glow"></div><svg class='noose' width='40' height='190' viewBox='0 0 20 95' shape-rendering='crispEdges'><g fill='#6b5232'><rect x='7' y='0' width='3' height='52'/><rect x='6' y='52' width='5' height='14'/><rect x='5' y='56' width='7' height='2' fill='#4a3820'/><rect x='5' y='61' width='7' height='2' fill='#4a3820'/><path d='M7 66h3v2h3v2h2v14h-2v3h-3v2H7v-2H4v-3H2V70h2v-2h3z'/></g><path d='M7 70h3v2h2v12h-2v2H7v-2H5V72h2z' fill='#000'/><rect x='8' y='0' width='1' height='52' fill='#8a6d44'/></svg><div class="rain2"></div><div class="flash"></div>
-    <div class="tit"><div class="t1">OS PECADOS</div><div class="t2">DA <span>FORCA</span></div><div class="knots"><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg></div><div class="sub">São Paulo · 1994 · Capítulo 1: A Corda que Não Arrebenta</div></div>
+  const k=await overlay(`<div id="capa"><img class="cbg" src="${IMG('capa')}"><div class="rain2"></div><div class="flash"></div>
+    <div class="tit"><div class="t1">OS PECADOS</div><div class="t2">DA <span>FORCA</span></div><div class="knots"><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg></div><div class="sub">São Paulo · 1994<br>Capítulo 1: A Corda que Não Arrebenta</div></div>
     <div class="menu">${sv&&!sv.flags.fim?'<div class="btn" data-k="c">CONTINUAR</div>':''}<div class="btn" data-k="n">NOVO JOGO</div></div>
     <div class="hint">Melhor com som e com o celular deitado</div></div>`,null);
   SFX.init();SFX.amb(S&&S.scene&&SC[S.scene].amb||'chuva-dentro');closeOv();
