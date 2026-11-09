@@ -132,6 +132,23 @@ body{font-family:'VT323',monospace;color:var(--ink)}
 #capa .menu .btn{min-width:320px;font-size:16px;background:linear-gradient(#3a2626,#211414);border-color:#7d4b4b #2a1010 #2a1010 #7d4b4b;color:#e8d8b8}
 #capa .menu .btn:hover{color:#ffd27a}
 #capa .hint{position:absolute;right:20px;top:8px;font-family:VT323;font-size:20px;color:#6c7682}
+
+#intro{position:fixed;left:0;top:0;width:1324px;height:687px;background:#000;z-index:40;overflow:hidden;display:none;cursor:pointer}
+#intro.on{display:block}
+#intro .ib{position:absolute;inset:0;background:center/cover no-repeat;opacity:0;image-rendering:pixelated}
+#intro .ir{position:absolute;inset:0;opacity:.14;background-image:repeating-linear-gradient(105deg,transparent 0 22px,rgba(200,220,255,.7) 22px 23px,transparent 23px 47px);background-size:200px 200px;animation:rain .3s linear infinite}
+#intro .ifl{position:absolute;inset:0;background:#e8eeff;opacity:0;mix-blend-mode:screen}
+#intro .itx{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;color:#d8d2c0;opacity:0;transition:opacity 1.2s;font-family:'VT323',monospace;font-size:40px;letter-spacing:3px;line-height:1.25;text-shadow:0 0 10px #000}
+#intro .itx small{display:block;font-size:26px;color:#8e98a4;letter-spacing:6px;margin-bottom:10px}
+#intro .itx b{font-family:'Press Start 2P';font-weight:normal;font-size:26px;color:#e8dfc6;letter-spacing:2px}
+#intro .itx i{display:block;font-size:24px;color:#8e98a4;font-style:normal;margin-top:6px}
+#intro .ititle{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;opacity:0}
+#intro .ititle .a{font-family:'Press Start 2P';font-size:40px;color:#cdbf9a;letter-spacing:14px}
+#intro .ititle .b{font-family:'Press Start 2P';font-size:96px;color:#b3201b;margin-top:18px;text-shadow:6px 6px 0 #000,0 0 40px rgba(220,30,30,.8)}
+#intro .ititle.shake{animation:ishake .5s}
+@keyframes ishake{0%,100%{transform:translateY(-50%)}20%{transform:translate(-8px,-52%)}40%{transform:translate(7px,-48%)}60%{transform:translate(-5px,-51%)}80%{transform:translate(3px,-49%)}}
+#intro .iskip{position:absolute;right:18px;bottom:14px;font-family:'Press Start 2P';font-size:13px;color:#7a838e;border:2px solid #3a434e;padding:8px 12px;background:rgba(0,0,0,.6)}
+#intro .itap{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font-family:'Press Start 2P';font-size:18px;color:#8e98a4;animation:blink 1.4s steps(2) infinite}
 #rot{display:none;position:fixed;inset:0;background:#000;color:var(--ink);z-index:50;align-items:center;justify-content:center;text-align:center;font-family:'Press Start 2P';font-size:14px;line-height:2;padding:30px}
 </style>
 </head>
@@ -169,6 +186,7 @@ body{font-family:'VT323',monospace;color:var(--ink)}
     </div>
   </div>
   <div id="ov"><div id="ovbg"></div><div id="ovc"></div></div>
+  <div id="intro"><div class="ib"></div><div class="ir"></div><div class="ifl"></div><div class="itx"></div><div class="ititle"><div class="a">OS PECADOS</div><div class="b">DA FORCA</div></div><div class="iskip">PULAR ▶</div></div>
 </div>
 <img id="ghost" alt="">
 <script>
@@ -178,7 +196,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const IMG=n=>n+'.webp';
 
 /* ---------------- ÁUDIO ---------------- */
-const SNDS=['batidas','latido','rosnado','telefone','pegar','pista','susto','dano','passos-madeira','passos-rua','porta','degrau','isqueiro','cafe','taxi','chuva','chuva-dentro','porao','delegacia','capela','sino','sussurros','musica','portao','redacao','praia','casa-vo','bau'];
+const SNDS=['batidas','latido','rosnado','telefone','pegar','pista','susto','dano','passos-madeira','passos-rua','porta','degrau','isqueiro','cafe','taxi','chuva','chuva-dentro','porao','delegacia','capela','sino','sussurros','musica','tamm','portao','redacao','praia','casa-vo','bau'];
 const SFX={ctx:null,on:true,buf:{},master:null,ambSrc:null,ambName:null,stepSrc:null,
   init(){if(this.ctx)return;try{this.ctx=new (window.AudioContext||window.webkitAudioContext)();this.master=this.ctx.createGain();this.master.connect(this.ctx.destination);
     SNDS.forEach(n=>fetch(n+'.mp3').then(r=>r.arrayBuffer()).then(ab=>new Promise((ok,no)=>this.ctx.decodeAudioData(ab,ok,no))).then(bf=>{this.buf[n]=bf;if(this.wantAmb===n)this.amb(n,true)}).catch(()=>{}))}catch(e){}},
@@ -809,21 +827,52 @@ function cadeado(){return new Promise(res=>{const d=[0,0,0,0];
     $('#ovc').querySelector('[data-ok]').onclick=e=>{e.stopPropagation();closeOv();res(d.join(''))};
     $('#ovc').querySelector('[data-x]').onclick=e=>{e.stopPropagation();closeOv();res(null)}};draw()})}
 
+
+/* ---------------- ABERTURA ---------------- */
+let introSkip=false;
+const isl=ms=>new Promise(r=>{const t0=performance.now();const f=()=>{if(introSkip||performance.now()-t0>=ms)r();else setTimeout(f,40)};f()});
+function tamm(){if(SFX.play('tamm',1))return;const x=SFX;if(!x.ctx)return;x.tone(55,3.2,'sawtooth',.35,0,30);x.tone(41,3.5,'sine',.6);x.tone(110,2.5,'square',.08,0,55);x.bell();trovao()}
+async function abertura(){
+  const I=$('#intro'),bg=I.querySelector('.ib'),fl=I.querySelector('.ifl'),tx=I.querySelector('.itx'),ti=I.querySelector('.ititle');
+  introSkip=false;I.classList.add('on');tx.style.opacity=0;ti.style.opacity=0;bg.style.opacity=0;
+  I.querySelector('.iskip').onclick=e=>{e.stopPropagation();introSkip=true};
+  SFX.amb('chuva');
+  const card=async(html,ms=2600)=>{if(introSkip)return;tx.innerHTML=html;tx.style.opacity=1;await isl(ms);tx.style.opacity=0;await isl(1300)};
+  const raio=async(img,ms=550)=>{if(introSkip)return;bg.style.transition='none';bg.style.backgroundImage=`url(${IMG(img)})`;fl.style.transition='none';fl.style.opacity=.85;bg.style.opacity=1;await isl(70);fl.style.opacity=0;await isl(60);fl.style.opacity=.4;await isl(60);fl.style.opacity=0;await isl(ms);bg.style.transition='opacity .5s';bg.style.opacity=0;setTimeout(trovao,300);await isl(900)};
+  await isl(1800);trovao();await isl(1500);
+  await card('<small>UMA HISTÓRIA DE</small><b>José Guilherme de Medeiros Souza</b>',3000);
+  await raio('parede');
+  await card('<small>ESTRELANDO</small>a família Medeiros<br>e companhia',2600);
+  const elenco=[['Guilherme Medeiros','o último Medeiros'],['Nathalia','pesquisadora do sebo'],['Pedro','o estagiário'],['Joana','a delegada'],['André','o escrivão'],['Mestra Sarah','a capoeirista'],['Dra. Helena','a legista'],['Vó Maria Izabel','a guardiã do baú'],['Seu Valdir','o taxista'],['Nori e Tiana','como eles mesmos']];
+  for(let k=0;k<elenco.length;k+=2){if(introSkip)break;const a=elenco[k],b=elenco[k+1];await card(`${a[0]}<i>${a[1]}</i><br>${b[0]}<i>${b[1]}</i>`,2300);if(k===2)await raio('bauaberto');if(k===6)await raio('capa2')}
+  await card('São Paulo, 1821.<br>A corda do soldado Chaguinhas<br>arrebentou três vezes.',3600);
+  await card('O povo pediu perdão.<br>Não houve perdão.',3000);
+  await raio('parede',350);
+  await card('São Paulo, 1994.',2400);
+  if(!introSkip){await isl(600);fl.style.transition='none';fl.style.opacity=1;tamm();ti.style.opacity=1;ti.classList.remove('shake');void ti.offsetWidth;ti.classList.add('shake');await isl(90);fl.style.transition='opacity 1.2s';fl.style.opacity=0;await isl(3800);ti.style.transition='opacity 1.5s';ti.style.opacity=0;await isl(1600);ti.style.transition=''}
+  I.classList.remove('on');try{localStorage.setItem('pecados_intro','1')}catch(e){}
+}
+
 /* início */
-async function inicio(){
-  fit();SFX.amb('musica');
+async function inicio(first){
+  fit();
+  if(first){const I=$('#intro');I.classList.add('on');I.querySelector('.iskip').style.display='none';const tap=document.createElement('div');tap.className='itap';tap.textContent='TOQUE PARA COMEÇAR';I.appendChild(tap);
+    await new Promise(r=>I.addEventListener('click',r,{once:true}));tap.remove();I.querySelector('.iskip').style.display='';SFX.init();telaCheia();
+    let visto=false;try{visto=!!localStorage.getItem('pecados_intro')}catch(e){}
+    if(!visto)await abertura();else I.classList.remove('on')}
+  SFX.amb('musica');
   const sv=carregar();
   const k=await overlay(`<div id="capa"><img class="cbg" src="${IMG('capa')}"><div class="rain2"></div><div class="flash"></div>
     <div class="tit"><div class="t1">OS PECADOS</div><div class="t2">DA <span>FORCA</span></div><div class="knots"><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg></div><div class="sub">São Paulo · 1994<br>Capítulo 1: A Corda que Não Arrebenta</div></div>
-    <div class="menu">${sv&&!sv.flags.fim?'<div class="btn" data-k="c">CONTINUAR</div>':''}<div class="btn" data-k="n">NOVO JOGO</div></div>
+    <div class="menu">${sv&&!sv.flags.fim?'<div class="btn" data-k="c">CONTINUAR</div>':''}<div class="btn" data-k="n">NOVO JOGO</div><div class="btn small" data-k="a" style="min-width:200px;font-size:11px">VER ABERTURA</div></div>
     <div class="hint">Melhor com som e com o celular deitado</div></div>`,null);
+  if(k==='a'){closeOv();await abertura();return inicio()}
   SFX.init();SFX.amb(S&&S.scene&&SC[S.scene].amb||'chuva-dentro');closeOv();
   if(k==='c'){S=sv;S._keepG=1;}else{S=novo();}
   const f=$('#fade');f.style.opacity=1;
   await fadeTo(S.scene);
 }
-inicio();
-if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
+inicio(true);
 </script>
 </body>
 </html>
