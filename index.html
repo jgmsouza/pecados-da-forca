@@ -855,7 +855,7 @@ async function abertura(){
   await isl(1800);trovao();await isl(1500);
   await card('<small>UMA HISTÓRIA DE</small><b>José Guilherme de Medeiros Souza</b>',3000);
   await raio('parede');
-  await card('<small>ESTRELANDO</small>a família Medeiros<br>e companhia',2600);
+  await card('<small>ESTRELANDO</small>a nossa família',2600);
   const elenco=[['Guilherme Medeiros','o último Medeiros'],['Nathalia Salustiano','sócia do sebo'],['Pedro Onishi','o estagiário'],['Joana Medeiros','a delegada'],['André Campo Piano','o escrivão'],['Sarah Souza','a capoeirista'],['Helena Souza','a legista'],['Vó Maria Izabel','a guardiã do baú'],['Eduardo Campo Piano','o taxista'],['Nori e Tiana','como eles mesmos']];
   for(let k=0;k<elenco.length;k+=2){if(introSkip)break;const a=elenco[k],b=elenco[k+1];await card(`${a[0]}<i>${a[1]}</i><br>${b[0]}<i>${b[1]}</i>`,2300);if(k===2)await raio('bauaberto');if(k===6)await raio('capa2')}
   await card('São Paulo, 1821.<br>A corda do soldado Chaguinhas<br>arrebentou três vezes.',3600);
