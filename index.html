@@ -229,13 +229,13 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const IMG=n=>n+'.webp';
 
 /* ---------------- ÁUDIO ---------------- */
-const SNDS=['tunel','metro','cemiterio','gregoriano','orelhao','walkman','correntes','cantico','batidas','latido','rosnado','telefone','pegar','pista','susto','dano','passos-madeira','passos-rua','porta','degrau','isqueiro','cafe','taxi','chuva','chuva-dentro','porao','delegacia','capela','sino','sussurros','musica','tamm','portao','redacao','praia','casa-vo','bau'];
+const SNDS=['briga','fogo','musica2','tunel','metro','cemiterio','gregoriano','orelhao','walkman','correntes','cantico','batidas','latido','rosnado','telefone','pegar','pista','susto','dano','passos-madeira','passos-rua','porta','degrau','isqueiro','cafe','taxi','chuva','chuva-dentro','porao','delegacia','capela','sino','sussurros','musica','tamm','portao','redacao','praia','casa-vo','bau'];
 const SFX={ctx:null,on:true,buf:{},master:null,ambSrc:null,ambName:null,stepSrc:null,
   init(){if(this.ctx)return;try{this.ctx=new (window.AudioContext||window.webkitAudioContext)();this.master=this.ctx.createGain();this.master.connect(this.ctx.destination);this.bus={};['mus','amb','fx'].forEach(k=>{const g=this.ctx.createGain();g.connect(this.master);this.bus[k]=g});this.applyVol();
     SNDS.forEach(n=>fetch(n+'.mp3').then(r=>r.arrayBuffer()).then(ab=>new Promise((ok,no)=>this.ctx.decodeAudioData(ab,ok,no))).then(bf=>{this.buf[n]=bf;const w=(this.wantAmb||'').split('|');if(w.includes(n)&&w.find(x=>this.buf[x])!==this.ambName)this.amb(this.wantAmb,true)}).catch(()=>{}))}catch(e){}},
   vol:(()=>{try{return Object.assign({mus:.8,amb:.8,fx:.8,mmus:0,mamb:0,mfx:0},JSON.parse(localStorage.getItem('pecados_som')||'{}'))}catch(e){return{mus:.8,amb:.8,fx:.8,mmus:0,mamb:0,mfx:0}}})(),
   applyVol(){try{localStorage.setItem('pecados_som',JSON.stringify(this.vol))}catch(e){}if(!this.bus)return;['mus','amb','fx'].forEach(k=>{const g=this.bus[k].gain,t=this.ctx.currentTime;g.cancelScheduledValues(t);g.setValueAtTime(this.vol['m'+k]?0:this.vol[k]*1.25,t)})},
-  busOf(n){return /^(musica|tamm)$/.test(n)?'mus':/^(chuva|chuva-dentro|porao|delegacia|capela|redacao|praia|casa-vo|tunel|cemiterio|gregoriano|metro)$/.test(n)?'amb':'fx'},
+  busOf(n){return /^(musica|musica2|tamm)$/.test(n)?'mus':/^(chuva|chuva-dentro|porao|delegacia|capela|redacao|praia|casa-vo|tunel|cemiterio|gregoriano|metro)$/.test(n)?'amb':'fx'},
   mute(){this.on=!this.on;if(this.master)this.master.gain.setTargetAtTime(this.on?1:0,this.ctx.currentTime,.05)},
   play(n,v=1,loop=false){if(!this.ctx||!this.buf[n])return null;const c=this.ctx,s=c.createBufferSource(),g=c.createGain();s.buffer=this.buf[n];s.loop=loop;g.gain.value=v;s.connect(g).connect(this.bus?this.bus[this.busOf(n)]:this.master);s.start();s._g=g;return s},
   fadeOut(s,t=.8){if(!s)return;try{s._g.gain.setTargetAtTime(0,this.ctx.currentTime,t/4);s.stop(this.ctx.currentTime+t)}catch(e){}},
@@ -874,19 +874,19 @@ SC.cativeiro={img:'cativeiro',amb:'porao',base:684,gh:370,range:[160,700],start:
 };
 async function soltarPedro(){SFX.fx('isqueiro');await narr('Queimo a corda com o isqueiro, devagar, sem queimar o Pedro.');S.flags.solto=1;renderSprites();await say('pedro','Chefe! Eu sabia que você vinha!');await pista(11,'o Pedro está solto.');
   await sleep(500);SFX.fx('correntes',.7);await narr('Passos na escada. O encapuzado voltou.');S.flags.distraiu=1;renderSprites();await hold('encap','en3',800);
-  if(has('lanterna')){await narr('Aponto a lanterna do Velho Chico na cara dele. Ele cobre os olhos e eu pulo em cima.')}
-  else{await narr('Ele avança com um castiçal de ferro.');await hurt(2,'O castiçal acerta suas costelas.');await narr('Sem luz, a luta é no escuro. Agarro o capuz.')}
+  if(has('lanterna')){await narr('Aponto a lanterna do Velho Chico na cara dele. Ele cobre os olhos e eu pulo em cima.');SFX.fx('briga',.9)}
+  else{await narr('Ele avança com um castiçal de ferro.');SFX.fx('briga',.9);await hurt(2,'O castiçal acerta suas costelas.');await narr('Sem luz, a luta é no escuro. Agarro o capuz.')}
   await hold('encap','en5',0);SFX.sting();await narr('O capuz cai.');await scare(1,'Você conhece esse rosto.');
   S.flags.revelou=1;renderSprites();await G('Barros?!');await say('barros','Devia ter ficado longe dos túneis, Medeiros. Como mandei.');await pista(12,'o líder encapuzado é o investigador Luiz Inácio Barros, braço direito da Joana.');
   await say('barros','Minha família guarda essa corda desde 1821. Meu pai tirou da Cúria em 54. E no dia vinte, o último Medeiros paga.');
   if(S.flags.policia){S.flags.joanaChegou=1;renderSprites();await say('joana','Polícia! Ninguém se mexe!');await say('joana','Barros...? Não. Não pode ser você.')}
   const r=await escolha(S.flags.policia?['Prender o Barros: "Algema ele, Joana!"','Deixar ele fugir e seguir o rastro até o resto da seita.']:['Prender o Barros: partir pra cima dele.','Deixar ele fugir e seguir o rastro até o resto da seita.']);
-  if(r===0){S.flags.prender=1;if(S.flags.policia){await say('joana','Mãos na cabeça, Barros!');await narr('O Barros chuta as velas. O círculo pega fogo e a fumaça toma o porão.');await say('barros','Vinte de setembro, Joana. Pergunta pro seu pai o que ele sabe.')}
-    else{await narr('Pulo em cima dele. Ele me joga contra a caldeira, chuta as velas e o fogo sobe.');await hurt(1,'Bato a cabeça no ferro.')}}
+  if(r===0){S.flags.prender=1;if(S.flags.policia){await say('joana','Mãos na cabeça, Barros!');SFX.fx('fogo',.9);await narr('O Barros chuta as velas. O círculo pega fogo e a fumaça toma o porão.');await say('barros','Vinte de setembro, Joana. Pergunta pro seu pai o que ele sabe.')}
+    else{SFX.fx('briga',.9);await narr('Pulo em cima dele. Ele me joga contra a caldeira, chuta as velas e o fogo sobe.');SFX.fx('fogo',.8);await hurt(1,'Bato a cabeça no ferro.')}}
   else{S.flags.seguir=1;await G('Deixa ele ir.');await narr('O Barros sobe a escada correndo. O Nori já está com o nariz no chão, seguindo.')}
   S.flags.fugiu=1;renderSprites();await narr(S.flags.policia?'Quando a fumaça baixa, o Barros sumiu.':'O Barros some escada acima, levando a corda da forca.');
   await say('pedro','Chefe... ele falou do Largo da Forca. Do dia vinte. Ele quer você lá.');await G('Então ele vai me ter lá. Mas do meu jeito.');await fimCap2()}
-async function fimCap2(){S.flags.fim=1;salvar();SFX.bell();SFX.amb('musica');
+async function fimCap2(){S.flags.fim=1;salvar();SFX.bell();SFX.amb('musica2|musica');
   const carry={policia:S.flags.policia,prender:S.flags.prender,seguir:S.flags.seguir,rel:S.rel};try{localStorage.setItem('pecados_c3',JSON.stringify(carry));localStorage.removeItem('pecados_v1')}catch(e){}
   $('#ovbg').style.opacity=1;$('#ov').style.justifyContent='flex-start';
   await overlay(`<div style="width:1324px;margin-left:calc(50% - 662px);padding:18px 0 26px;background:linear-gradient(rgba(0,0,0,.85),rgba(0,0,0,.55) 70%,transparent)">
