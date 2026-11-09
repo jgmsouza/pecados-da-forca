@@ -231,7 +231,7 @@ const ITEMS={
   velaacesa:{n:'Vela acesa',d:'A chama não treme nem com o vento. Isso não é normal.'}
 };
 const ICON={petisco:'i_petisco',nota:'i_nota',vela:'i_vela',bilhete:'i_bilhete',isqueiro:'i_isqueiro',velaacesa:'i_velaacesa',recorte:'i_nota',corda:'i_corda'};
-const PERS={guilherme:'Guilherme',nathalia:'Nathalia',pedro:'Pedro',sarah:'Mestra Sarah',helena:'Dra. Helena',joana:'Delegada Joana',andre:'André',izabel:'Vó Maria Izabel',valdir:'Seu Valdir'};
+const PERS={guilherme:'Guilherme',nathalia:'Nathalia',pedro:'Pedro',sarah:'Mestra Sarah',helena:'Dra. Helena',joana:'Delegada Joana',andre:'André',izabel:'Vó Maria Izabel',eduardo:'Seu Eduardo'};
 const PISTAS=13;
 const LOCS={sebo:'Sebo Medeiros',capelafora:'Capela dos Aflitos',delegacia:'1º DP',redacao:'IML',casafora:'Praia Grande'};
 
@@ -329,7 +329,7 @@ SC.sebo={img:'sebo',f:'brightness(1.28) saturate(.85) contrast(.95)',base:687,gh
     a.push({id:'nori',img:S.flags.noriVolta?'nr0':'nr7',x:150,y:648,h:70});
     a.push({id:'tiana',img:'ta6',x:330,y:668,h:118});return a},
   hots:[
-    {l:'Vitrine',r:[150,115,320,265],x:330,olhar:'Garoa. Sempre garoa.',andar:async()=>{await narr('Para ir a outro lugar, chame o táxi do Seu Valdir (botão TÁXI).')}},
+    {l:'Vitrine',r:[150,115,320,265],x:330,olhar:'Garoa. Sempre garoa.',andar:async()=>{await narr('Para ir a outro lugar, chame o táxi do Seu Eduardo (botão TÁXI).')}},
     {l:'Máquina de escrever',r:[135,400,75,50],olhar:'Página 213. Ainda.',pegar:'Pesada demais.'},
     {l:'Livro de vendas',r:[205,438,70,32],olhar:async()=>{await narr('O caderno de vendas do sebo. A folha do dia 12 foi arrancada.');await pista(1,'alguém sumiu com o registro do dia da venda.')},pegar:'Melhor deixar aqui. Isso é prova.'},
     {l:'Caixa registradora',r:[280,410,70,65],olhar:()=>narr(S.flags.caixa?'Vazio. Eu mesmo raspei.':'CR$ 3.400 no caixa. Não paga nem a conta de luz.'),pegar:async()=>{if(S.flags.caixa)return G('Já peguei tudo. Só sobrou poeira.');S.flags.caixa=1;S.cr+=3400;drawHud();SFX.pick();toast('+ CR$ 3.400');await G('O sebo é meu mesmo. Vai pro táxi.')}},
@@ -346,7 +346,7 @@ SC.sebo={img:'sebo',f:'brightness(1.28) saturate(.85) contrast(.95)',base:687,gh
       andar:async()=>porao(),usar:async it=>{if(it==='velaacesa'||(!it&&has('velaacesa')))return porao();if(it==='vela')return G('Apagada não adianta. Preciso de fogo.');return porao()},pegar:'É uma porta.'}
   ],
   npc:{
-    nathalia:{l:'Nathalia',olhar:'Nathalia. Lê latim melhor que eu leio cardápio.',
+    nathalia:{l:'Nathalia',olhar:'Nathalia, minha sócia no sebo. Lê latim melhor que eu leio cardápio.',
       falar:async()=>{if(!S.flags.nota){if(!S.flags.nath1){S.flags.nath1=1;await say('nathalia','Polícia aqui de madrugada? Guilherme, o que tá acontecendo?');const r=await escolha(['Preciso de você nessa, Nathalia. Você lê coisa velha melhor que ninguém.','Não é nada. Volta pro trabalho que eu resolvo sozinho.']);if(r===0){rel('nathalia',1);await G('Preciso de você nessa, Nathalia.');await say('nathalia','Finalmente alguém reconhece meu latim.')}else{rel('nathalia',-1);await G('Não é nada. Volta pro trabalho que eu resolvo sozinho.');await say('nathalia','Tá. Sozinho. Como sempre.')}}await say('nathalia','Alguém arrancou a folha do dia da venda. E não fui eu.');await say('nathalia','Mas eu vi um papel caindo debaixo da estante baixa. Só o Nori passa naquele vão.');await G('E o Nori só trabalha com pagamento adiantado.')}
         else if(!has('velaacesa')){await say('nathalia','Capela dos Aflitos, no Largo da Forca... do lado tem a academia da mestra Sarah. Dizem que ela cuida dos bilhetes da capela.');await say('nathalia','Se o porão estiver escuro, leva fogo. A luz de lá queimou faz meses.')}
         else await say('nathalia','Vai descer no porão? Leva a Tiana. Ela sente essas coisas.')},
@@ -380,7 +380,7 @@ async function noriBusca(){
   await scare(1,'Três vezes. Igual ao Chaguinhas em 1821. Você sente o pescoço apertar.');
   await pista(3,'na autópsia, a Helena achou três marcas de corda: a corda arrebentou três vezes.');
   S.flags.capela=1;
-  await narr('Capela dos Aflitos liberada no táxi do Seu Valdir.');
+  await narr('Capela dos Aflitos liberada no táxi do Seu Eduardo.');
 }
 async function porao(){
   if(!has('velaacesa')){if(has('vela'))return G('Lá embaixo é breu. A vela não acende sozinha.');return G('Lá embaixo é breu, e a lâmpada queimou faz meses. Preciso de luz.')}
@@ -401,7 +401,7 @@ SC.capelafora={amb:'chuva',rua:1,img:'largo',f:'none',base:655,gh:300,range:[150
   ],
   async enter(){if(S.flags.bilhete&&!S.flags.vulto){S.flags.vulto=1;await sleep(400);SFX.growl();latir();await narr('Ao sair, a Tiana trava e encara o cruzeiro. Rosna antes de qualquer coisa acontecer.');SFX.sting();
       await narr('Ao pé do cruzeiro, um vulto com uma corda no pescoço. Ele some na garoa.');await narr('Graças ao aviso da Tiana, Guilherme estava preparado. A sanidade fica inteira.');
-      await G('Preciso ver o laudo dessas mortes. A delegada Joana não vai me mostrar... mas o André, escrivão do 1º DP, talvez nem perceba.');S.flags.dp=1;await narr('1º DP liberado no táxi do Seu Valdir.')}
+      await G('Preciso ver o laudo dessas mortes. A delegada Joana não vai me mostrar... mas o André, escrivão do 1º DP, talvez nem perceba.');S.flags.dp=1;await narr('1º DP liberado no táxi do Seu Eduardo.')}
     else if(!S.flags.capelaVisit){S.flags.capelaVisit=1;await narr('Largo da Forca. De um lado, a Capela dos Aflitos; do outro, o cruzeiro onde ficava a forca. A Tiana veio junto.')}}
 };
 async function entrarAcademia(){SFX.fx('porta',.6);await fadeTo('capeladentro')}
@@ -537,7 +537,7 @@ SC.casafora={amb:'praia',rua:1,img:'casafora',base:680,gh:300,range:[150,950],st
     {l:'Coqueiro',r:[0,0,280,400],x:200,olhar:'O coqueiro dobra com o vento. Parece fazer reverência.'},
     {l:'Luz da varanda',r:[485,285,40,40],olhar:'Pisca a cada trovão.'}
   ],
-  async enter(){if(!S.flags.praia){S.flags.praia=1;await narr('Uma hora de estrada no Opala do Seu Valdir. Praia Grande, debaixo de tempestade.');await G('A casa da vó. Faz anos que eu não venho aqui.')}}
+  async enter(){if(!S.flags.praia){S.flags.praia=1;await narr('Uma hora de estrada no Opala do Seu Eduardo. Praia Grande, debaixo de tempestade.');await G('A casa da vó. Faz anos que eu não venho aqui.')}}
 };
 SC.sala={amb:'casa-vo',img:'sala',sf:'brightness(.72) saturate(.85)',base:665,gh:350,range:[160,780],start:260,follow:'tiana',trovao:1,
   sprites:()=>[{id:'izabel',img:'ir0',x:620,y:648,h:325,anim:'izabel'}],
@@ -734,12 +734,12 @@ function closeOv(){$('#ov').classList.remove('on')}
 $('#bmap').onclick=async e=>{e.stopPropagation();if(busy||dlgResolve||!taxiOk())return;busy=true;
   const here={capeladentro:'capelafora',sala:'casafora'}[S.scene]||S.scene;
   const dest=[['sebo',1],['capelafora',S.flags.capela],['delegacia',S.flags.dp],['redacao',S.flags.ligacao],['casafora',S.flags.ligacao]];
-  let h=`<div class="title" style="font-size:26px">TÁXI DO SEU VALDIR</div><p>Seu Valdir, ao volante do Opala: "Pra onde, doutor? Corrida é CR$ 2.000."</p><p style="font-size:26px;color:#f0d060">Você tem CR$ ${S.cr.toLocaleString('pt-BR')}</p>`;
+  let h=`<div class="title" style="font-size:26px">TÁXI DO SEU VALDIR</div><p>Seu Eduardo, pai do André, ao volante do Opala: "Pra onde, doutor? Corrida é CR$ 2.000."</p><p style="font-size:26px;color:#f0d060">Você tem CR$ ${S.cr.toLocaleString('pt-BR')}</p>`;
   dest.forEach(([k,ok])=>{if(ok)h+=`<div class="btn" data-k="${k}" style="${k===here?'opacity:.4':''}">${LOCS[k].toUpperCase()}${k===here?' (AQUI)':''}</div>`});
   h+=`<div class="btn small" data-k="x">FICAR AQUI</div>`;
   let k;while(true){k=await overlay(h,'rua');if(k!==here)break}
   closeOv();
-  if(k!=='x'){SFX.fx('taxi',.6);if(S.cr>=2000){S.cr-=2000;drawHud();await fadeTo(k)}else{await say(null,'Seu Valdir: "Tá liso, né? Vai fiado. Depois acerta."');await fadeTo(k)}}
+  if(k!=='x'){SFX.fx('taxi',.6);if(S.cr>=2000){S.cr-=2000;drawHud();await fadeTo(k)}else{await say(null,'Seu Eduardo: "Tá liso, né? Vai fiado. Depois acerta."');await fadeTo(k)}}
   busy=false;salvar()};
 $('#bhint').onclick=e=>{e.stopPropagation();document.querySelectorAll('.hs,.spr.npc').forEach(x=>x.classList.add('flash'));setTimeout(()=>document.querySelectorAll('.flash').forEach(x=>x.classList.remove('flash')),1500)};
 $('#bsnd').onclick=e=>{e.stopPropagation();SFX.init();SFX.mute();$('#bsnd').textContent=SFX.on?'SOM':'MUDO'};
@@ -783,7 +783,7 @@ async function final(){
   await say('izabel','Elas começaram, não foi? Vem pra Praia Grande. Hoje.');
   SFX.bell();
   S.flags.ligacao=1;salvar();
-  await narr('IML e Praia Grande liberados no táxi do Seu Valdir.');
+  await narr('IML e Praia Grande liberados no táxi do Seu Eduardo.');
   await fadeTo('sebo');
 }
 async function fimCap1(){
@@ -843,7 +843,7 @@ async function abertura(){
   await card('<small>UMA HISTÓRIA DE</small><b>José Guilherme de Medeiros Souza</b>',3000);
   await raio('parede');
   await card('<small>ESTRELANDO</small>a família Medeiros<br>e companhia',2600);
-  const elenco=[['Guilherme Medeiros','o último Medeiros'],['Nathalia','pesquisadora do sebo'],['Pedro','o estagiário'],['Joana','a delegada'],['André','o escrivão'],['Mestra Sarah','a capoeirista'],['Dra. Helena','a legista'],['Vó Maria Izabel','a guardiã do baú'],['Seu Valdir','o taxista'],['Nori e Tiana','como eles mesmos']];
+  const elenco=[['Guilherme Medeiros','o último Medeiros'],['Nathalia Salustiano','sócia do sebo'],['Pedro Onishi','o estagiário'],['Joana Medeiros','a delegada'],['André Campo Piano','o escrivão'],['Sarah Souza','a capoeirista'],['Helena Souza','a legista'],['Vó Maria Izabel','a guardiã do baú'],['Eduardo Campo Piano','o taxista'],['Nori e Tiana','como eles mesmos']];
   for(let k=0;k<elenco.length;k+=2){if(introSkip)break;const a=elenco[k],b=elenco[k+1];await card(`${a[0]}<i>${a[1]}</i><br>${b[0]}<i>${b[1]}</i>`,2300);if(k===2)await raio('bauaberto');if(k===6)await raio('capa2')}
   await card('São Paulo, 1821.<br>A corda do soldado Chaguinhas<br>arrebentou três vezes.',3600);
   await card('O povo pediu perdão.<br>Não houve perdão.',3000);
