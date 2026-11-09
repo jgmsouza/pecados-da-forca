@@ -790,13 +790,23 @@ async function orelhao(){if(S.pistas.includes(7))return narr('Linha muda. Só a 
   if(!has('chave'))await G('Eles estão debaixo dos meus pés. Aquele bueiro do lado da Catedral... o Nori passa por qualquer buraco.')}
 async function noriBueiro(){if(has('chave')||S.flags.bueiroAberto)return narr('O Nori já fez a parte dele. Herói.');
   if(!has('petisco'))return G('O Nori não trabalha de graça. Preciso de um petisco. Tem no pote do sebo.');
-  take('petisco');S.flags.petisco2=1;const f2=$('#f2');
+  take('petisco');S.flags.petisco2=1;const f2=$('#f2');const sp=$('#sprites');
   await narr('Mostro o petisco e aponto a boca de lobo. O Nori entende na hora.');
-  const nx=f2?f2.style.left:null;if(f2){f2.classList.add('walking');f2.style.transform='translateX(-50%) scaleX(-1)';f2.style.transition='left 1.2s linear, opacity .5s, top 1.2s linear';var ntop=f2.style.top;f2.style.left='250px';f2.style.top=(parseFloat(ntop)-48)+'px';await sleep(1300);f2.style.transition='clip-path 1.4s ease-in, opacity .3s 1.2s';f2.style.clipPath='inset(0 0 0 0)';await sleep(30);f2.style.clipPath='inset(0 0 0 100%)';f2.style.opacity=0;await sleep(1600);f2.style.clipPath='';f2.style.transition='left 1.2s linear, opacity .5s, top .5s'}
+  const nx=f2?f2.style.left:'500px',ntop=f2?f2.style.top:'600px';
+  if(f2){f2.classList.add('walking');f2.style.transform='translateX(-50%) scaleX(-1)';f2.style.transition='left 1.2s linear, top 1.2s linear, opacity .25s';f2.style.left='250px';f2.style.top=(parseFloat(ntop)-48)+'px';await sleep(1250)}
+  // entrando: metade de trás aparecendo e afundando no buraco
+  const wE=document.createElement('div');wE.style.cssText='position:absolute;left:183px;top:500px;width:110px;height:122px;overflow:hidden;pointer-events:none';
+  const iE=new Image();iE.src=IMG('nbE');iE.style.cssText='position:absolute;left:0;top:30px;width:105px;image-rendering:pixelated;transition:transform 1.3s ease-in';wE.appendChild(iE);sp.appendChild(wE);
+  if(f2)f2.style.opacity=0;SFX.bark();await sleep(700);iE.style.transform='translateY(95px)';await sleep(1400);wE.remove();
   await narr('Ele se espreme pela boca de lobo e some lá embaixo.');await sleep(900);SFX.bark();await sleep(900);SFX.bark();await narr('Latidos abafados. Água. Silêncio...');
-  let key=null;if(f2){f2.style.opacity=1;f2.style.transform='translateX(-50%)';await sleep(600);
-    key=new Image();key.src=IMG('chave_s');const fw=f2.getBoundingClientRect().width/ (f2.getBoundingClientRect().width/f2.offsetWidth||1);key.style.cssText=`position:absolute;height:16px;image-rendering:pixelated;pointer-events:none;transition:left 1.2s linear;left:${250+f2.offsetWidth*0.28}px;top:${parseFloat(f2.style.top)+f2.offsetHeight*0.22}px`;$('#sprites').appendChild(key);
-    await sleep(700);f2.style.left=nx;f2.style.top=ntop;key.style.transition='left 1.2s linear, top 1.2s linear';key.style.top=(parseFloat(ntop)+f2.offsetHeight*0.22)+'px';key.style.left=(parseFloat(nx)+f2.offsetWidth*0.28)+'px';await sleep(1300);f2.style.transition='';f2.classList.remove('walking')}await narr('O Nori volta encharcado, rabo abanando, com uma chave enferrujada na boca.');if(key)key.remove();give('chave');await pista(8,'a chave da grade do bueiro, trazida pelo Nori.');await G('Bom garoto. Esse petisco foi o melhor investimento da minha vida.')}
+  // saindo com a chave
+  const wK=document.createElement('div');wK.style.cssText='position:absolute;left:186px;top:527px;width:130px;height:100px;overflow:hidden;pointer-events:none;transition:left 1.4s linear, top 1.4s linear';
+  const iK=new Image();iK.src=IMG('nbK');iK.style.cssText='position:absolute;left:0;top:0;width:125px;image-rendering:pixelated;transform:translateY(100px);transition:transform 1.1s ease-out';wK.appendChild(iK);sp.appendChild(wK);
+  await sleep(50);iK.style.transform='translateY(0)';await sleep(1300);wK.style.overflow='visible';await sleep(400);
+  wK.style.left=(parseFloat(nx)-62)+'px';wK.style.top=(parseFloat(ntop)+(f2?f2.offsetHeight:60)-100)+'px';await sleep(1500);
+  await narr('O Nori volta encharcado, rabo abanando, com uma chave enferrujada na boca.');wK.remove();
+  if(f2){f2.style.transition='';f2.style.left=nx;f2.style.top=ntop;f2.style.transform='translateX(-50%)';f2.style.opacity=1;f2.classList.remove('walking')}
+  give('chave');await pista(8,'a chave da grade do bueiro, trazida pelo Nori.');await G('Bom garoto. Esse petisco foi o melhor investimento da minha vida.')}
 async function abrirBueiro(){if(!has('chave'))return G('Trancado com um cadeado novo.');SFX.fx('portao',.6);take('chave');S.flags.bueiroAberto=1;await narr('O cadeado cede. Embaixo da grade, uma escada de ferro desce para o escuro.');await fadeTo('tunel')}
 SC.bueiro={img:'bueiro',amb:'chuva',noWalk:1,
   exits:[{l:'Voltar',r:[0,580,170,107],to:'se'}],
