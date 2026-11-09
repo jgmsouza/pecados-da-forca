@@ -229,13 +229,13 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const IMG=n=>n+'.webp';
 
 /* ---------------- ÁUDIO ---------------- */
-const SNDS=['briga','fogo','musica2','tunel','metro','cemiterio','gregoriano','orelhao','walkman','correntes','cantico','batidas','latido','rosnado','telefone','pegar','pista','susto','dano','passos-madeira','passos-rua','porta','degrau','isqueiro','cafe','taxi','chuva','chuva-dentro','porao','delegacia','capela','sino','sussurros','musica','tamm','portao','redacao','praia','casa-vo','bau'];
+const SNDS=['atabaques','jukebox','motos','sino12','vento','grito','cantico2','sirene','creditos','briga','fogo','musica2','tunel','metro','cemiterio','gregoriano','orelhao','walkman','correntes','cantico','batidas','latido','rosnado','telefone','pegar','pista','susto','dano','passos-madeira','passos-rua','porta','degrau','isqueiro','cafe','taxi','chuva','chuva-dentro','porao','delegacia','capela','sino','sussurros','musica','tamm','portao','redacao','praia','casa-vo','bau'];
 const SFX={ctx:null,on:true,buf:{},master:null,ambSrc:null,ambName:null,stepSrc:null,
   init(){if(this.ctx)return;try{this.ctx=new (window.AudioContext||window.webkitAudioContext)();this.master=this.ctx.createGain();this.master.connect(this.ctx.destination);this.bus={};['mus','amb','fx'].forEach(k=>{const g=this.ctx.createGain();g.connect(this.master);this.bus[k]=g});this.applyVol();
     SNDS.forEach(n=>fetch(n+'.mp3').then(r=>r.arrayBuffer()).then(ab=>new Promise((ok,no)=>this.ctx.decodeAudioData(ab,ok,no))).then(bf=>{this.buf[n]=bf;const w=(this.wantAmb||'').split('|');if(w.includes(n)&&w.find(x=>this.buf[x])!==this.ambName)this.amb(this.wantAmb,true)}).catch(()=>{}))}catch(e){}},
   vol:(()=>{try{return Object.assign({mus:.8,amb:.8,fx:.8,mmus:0,mamb:0,mfx:0},JSON.parse(localStorage.getItem('pecados_som')||'{}'))}catch(e){return{mus:.8,amb:.8,fx:.8,mmus:0,mamb:0,mfx:0}}})(),
   applyVol(){try{localStorage.setItem('pecados_som',JSON.stringify(this.vol))}catch(e){}if(!this.bus)return;['mus','amb','fx'].forEach(k=>{const g=this.bus[k].gain,t=this.ctx.currentTime;g.cancelScheduledValues(t);g.setValueAtTime(this.vol['m'+k]?0:this.vol[k]*1.25,t)})},
-  busOf(n){return /^(musica|musica2|tamm)$/.test(n)?'mus':/^(chuva|chuva-dentro|porao|delegacia|capela|redacao|praia|casa-vo|tunel|cemiterio|gregoriano|metro)$/.test(n)?'amb':'fx'},
+  busOf(n){return /^(musica|musica2|creditos|tamm)$/.test(n)?'mus':/^(chuva|chuva-dentro|porao|delegacia|capela|redacao|praia|casa-vo|tunel|cemiterio|gregoriano|metro|atabaques|jukebox|vento|cantico2)$/.test(n)?'amb':'fx'},
   mute(){this.on=!this.on;if(this.master)this.master.gain.setTargetAtTime(this.on?1:0,this.ctx.currentTime,.05)},
   play(n,v=1,loop=false){if(!this.ctx||!this.buf[n])return null;const c=this.ctx,s=c.createBufferSource(),g=c.createGain();s.buffer=this.buf[n];s.loop=loop;g.gain.value=v;s.connect(g).connect(this.bus?this.bus[this.busOf(n)]:this.master);s.start();s._g=g;return s},
   fadeOut(s,t=.8){if(!s)return;try{s._g.gain.setTargetAtTime(0,this.ctx.currentTime,t/4);s.stop(this.ctx.currentTime+t)}catch(e){}},
@@ -265,6 +265,10 @@ const ITEMS={
   recorte:{n:'Recorte de 1954',d:'Achado na boca do Otávio. Notícias Populares, 21/9/1954: "Antônio Medeiros achado enforcado. Três nós a carvão ao lado do corpo." O irmão do vô José Marcelino.'},
   corda:{n:'Pedaço de corda',d:'Cânhamo velho, duro como osso. Tem mais de 150 anos.'},
   velaacesa:{n:'Vela acesa',d:'A chama não treme nem com o vento. Isso não é normal.'},
+  capuz:{n:'Capuz da seita',d:'Um capuz marrom da Irmandade. Cheira a vela queimada.'},
+  guia:{n:'Guia da Renata',d:'Um colar de contas coloridas. Protege a cabeça, disse a Renata.'},
+  bilhete:{n:'Bilhete de 1821',d:'"Peço justiça para os soldados pobres que não recebem soldo. Francisco José das Chagas, 1821."'},
+  corda:{n:'A corda original',d:'A corda de 1821. Pesada, áspera e fria como pedra.'},
   walkman:{n:'Walkman do Pedro',d:'O walkman do Pedro, com uma fita dentro. O botão de gravar ainda está apertado.'},
   bone:{n:'Boné do Pedro',d:'O boné vermelho do Pedro. Tem o cheiro dele, e o Nori sabe disso.'},
   mapa:{n:'Mapa dos túneis',d:'Mapa de 1890 dos túneis sob o centro. Uma linha vermelha liga a Sé ao subsolo do Martinelli.'},
@@ -272,12 +276,13 @@ const ITEMS={
   chave:{n:'Chave da grade',d:'Chave enferrujada, babada pelo Nori. Abre o cadeado do bueiro.'},
   velapreta:{n:'Velas pretas',d:'Velas pretas e um toco de carvão. A Irmandade passou por aqui.'}
 };
-const ICON={walkman:'i_walkman',bone:'i_bone',mapa:'i_mapa',lanterna:'i_lanterna',chave:'i_chave',velapreta:'i_velapreta',petisco:'i_petisco',nota:'i_nota',vela:'i_vela',bilhete:'i_bilhete',isqueiro:'i_isqueiro',velaacesa:'i_velaacesa',recorte:'i_nota',corda:'i_corda'};
-const PERS={theo:'Theo',chico:'Velho Chico',barros:'Investigador Barros',encap:'Encapuzado',voz:'Voz no orelhão',guilherme:'Guilherme',nathalia:'Nathalia',pedro:'Pedro',sarah:'Mestra Sarah',helena:'Dra. Helena',joana:'Delegada Joana',andre:'André',izabel:'Vó Maria Izabel',eduardo:'Seu Eduardo'};
-const PISTAS=13;const NP=()=>S&&S.cap===2?12:13;const PLC=()=>S&&S.cap===2?PL2:PL;
-const LOCS={sebo2:'Sebo Medeiros',mosteiro:'Mosteiro de São Bento',cemiterio:'Cemitério da Consolação',se:'Praça da Sé',sebo:'Sebo Medeiros',capelafora:'Capela dos Aflitos',delegacia:'1º DP',redacao:'IML',casafora:'Praia Grande'};
+const ICON={capuz:'i_capuz',guia:'i_guia',bilhete:'i_bilhete',corda:'i_corda',walkman:'i_walkman',bone:'i_bone',mapa:'i_mapa',lanterna:'i_lanterna',chave:'i_chave',velapreta:'i_velapreta',petisco:'i_petisco',nota:'i_nota',vela:'i_vela',bilhete:'i_bilhete',isqueiro:'i_isqueiro',velaacesa:'i_velaacesa',recorte:'i_nota',corda:'i_corda'};
+const PERS={renata:'Renata',marlene:'Dona Marlene',ayrton:'Ayrton',beth:'Beth',miguel:'Miguel',esp:'Chaguinhas',theo:'Theo',chico:'Velho Chico',barros:'Investigador Barros',encap:'Encapuzado',voz:'Voz no orelhão',guilherme:'Guilherme',nathalia:'Nathalia',pedro:'Pedro',sarah:'Mestra Sarah',helena:'Dra. Helena',joana:'Delegada Joana',andre:'André',izabel:'Vó Maria Izabel',eduardo:'Seu Eduardo'};
+const PISTAS=13;const NP=()=>S&&S.cap>=2?12:13;const PLC=()=>S&&S.cap===3?PL3:S&&S.cap===2?PL2:PL;
+const LOCS={delegacia3:'Delegacia',minhocao:'Debaixo do Minhocão',terreiro:'Terreiro da Renata',bar:'Bar do Motoclube',capela3:'Capela dos Aflitos',largo3:'Largo da Forca',sebo2:'Sebo Medeiros',mosteiro:'Mosteiro de São Bento',cemiterio:'Cemitério da Consolação',se:'Praça da Sé',sebo:'Sebo Medeiros',capelafora:'Capela dos Aflitos',delegacia:'1º DP',redacao:'IML',casafora:'Praia Grande'};
 
 let S=null; // estado
+function novo3(c){c=c||{};return{cap:3,scene:c.seguir?'minhocao':'delegacia3',gx:null,flags:{policia:c.policia,prender:c.prender,seguir:c.seguir,nathVem:c.nathVem},inv:['isqueiro','lanterna'],vida:10,san:10,cr:6000,pistas:[],cp:null,rel:c.rel||{}}}
 function novo2(c){c=c||{};return{cap:2,scene:'sebo2',gx:null,flags:{policia:c.policia},inv:['isqueiro'],vida:10,san:10,cr:8000,pistas:[],cp:null,rel:c.rel||{}}}
 function novo(){return{scene:'abertura',gx:null,flags:{},inv:[],vida:10,san:10,cr:10000,pistas:[],cp:null,rel:{}}}
 function rel(who,n){S.rel=S.rel||{};S.rel[who]=(S.rel[who]||0)+n;toast(n>0?(PERS[who]||who).toUpperCase()+' GOSTOU DISSO':(PERS[who]||who).toUpperCase()+' NÃO GOSTOU',1600)}
@@ -324,7 +329,7 @@ function escolha(ops){return dq=dq.then(()=>tip('escolha','ESCOLHAS','Escolha um
 function say(who,txt){dq=dq.then(()=>show(who,txt));return dq}
 function show(who,txt){let held=null;const pa=portAnim(who,txt);if(who){anim(who);const el=document.querySelector(`.spr[data-id="${who}"]`);if(el&&el._anim){held=el;el._hold=ANIMS[el._anim].talk;el.src=IMG(el._hold)}}
   return new Promise(r0=>{const res=()=>{if(held)held._hold=null;pa();r0()};const d=$('#dlg');d.classList.toggle('narr',!who);const p=$('#por');
-  p.innerHTML='';if(who&&['guilherme','nathalia','pedro','sarah','helena','joana','andre','izabel','theo','chico','barros'].includes(who)){p.className='';p.style.backgroundImage=`url(${IMG('p_'+who)})`}else p.className='none';
+  p.innerHTML='';if(who&&['guilherme','nathalia','pedro','sarah','helena','joana','andre','izabel','theo','chico','barros','renata','marlene','ayrton','beth','miguel','eduardo'].includes(who)){p.className='';p.style.backgroundImage=`url(${IMG('p_'+who)})`}else p.className='none';
   $('#dname').textContent=who?PERS[who]:'';$('#dname').style.display=who?'block':'none';$('#dline').textContent=who?'"'+txt+'"':txt;d.classList.add('on');dlgResolve=res})}
 const narr=t=>say(null,t);
 const G=t=>say('guilherme',t);
@@ -901,15 +906,261 @@ async function soltarPedro(){SFX.fx('isqueiro');await narr('Queimo a corda com o
   S.flags.fugiu=1;renderSprites();await narr(S.flags.policia?'Quando a fumaça baixa, o Barros sumiu.':'O Barros some escada acima, levando a corda da forca.');
   await say('pedro','Chefe... ele falou do Largo da Forca. Do dia vinte. Ele quer você lá.');await G('Então ele vai me ter lá. Mas do meu jeito.');await fimCap2()}
 async function fimCap2(){S.flags.fim=1;salvar();SFX.bell();SFX.amb('musica2|musica');
-  const carry={policia:S.flags.policia,prender:S.flags.prender,seguir:S.flags.seguir,rel:S.rel};try{localStorage.setItem('pecados_c3',JSON.stringify(carry));localStorage.removeItem('pecados_v1')}catch(e){}
+  const carry={policia:S.flags.policia,prender:S.flags.prender,seguir:S.flags.seguir,nathVem:S.flags.nathVem,rel:S.rel};try{localStorage.setItem('pecados_c3',JSON.stringify(carry));localStorage.removeItem('pecados_v1')}catch(e){}
   $('#ovbg').style.opacity=1;$('#ov').style.justifyContent='flex-start';
-  await overlay(`<div style="width:1324px;margin-left:calc(50% - 662px);padding:18px 0 26px;background:linear-gradient(rgba(0,0,0,.85),rgba(0,0,0,.55) 70%,transparent)">
+  const k3=await overlay(`<div style="width:1324px;margin-left:calc(50% - 662px);padding:18px 0 26px;background:linear-gradient(rgba(0,0,0,.85),rgba(0,0,0,.55) 70%,transparent)">
     <div class="title" style="font-size:40px">FIM DO CAPÍTULO 2</div><div class="sub" style="margin:4px 0">O Subterrâneo</div>
     <p style="margin:6px auto;font-size:24px">Pistas: ${S.pistas.length}/${NP()} · Vida: ${S.vida}/10 · Sanidade: ${S.san}/10</p>
-    <p style="margin:4px auto 12px;font-size:24px;color:#d9c48a">Capítulo 3: A Última Corda — em breve</p>
-    <div class="btn" data-k="n" style="display:inline-block;min-width:300px">VOLTAR AO INÍCIO</div></div>`,'fim2');
+    <div class="btn" data-k="c3" style="display:inline-block;min-width:300px">JOGAR O CAPÍTULO 3</div> <div class="btn small" data-k="n" style="display:inline-block;min-width:220px">VOLTAR AO INÍCIO</div></div>`,'fim2');
   $('#ovbg').style.opacity='';$('#ov').style.justifyContent='';
-  closeOv();inicio()}
+  closeOv();if(k3==='c3'){S=novo3(carry);await fadeTo(S.scene);return}inicio()}
+
+/* ================= CAPÍTULO 3: A ÚLTIMA CORDA ================= */
+const PL3={1:['1954: o Seu Eduardo levou os encapuzados de táxi, sem saber','Delegacia: converse com o Seu Eduardo'],2:['O esconderijo da Irmandade fica debaixo do Minhocão','Delegacia: ouça o Seu Eduardo até o fim'],
+ 3:['O ritual: meia-noite do dia 20, no Largo da Forca, com a corda','Minhocão: leia o livro de atas no caixote'],4:['A Irmandade tem sete encapuzados','Minhocão: leia o livro de atas'],
+ 5:['O Chaguinhas quer justiça, não vingança','Terreiro: converse com a Renata'],6:['Todo 20 de setembro, um carro preto estaciona no Largo','Bar: converse com o Ayrton'],
+ 7:['O bilhete de 1821: o Chaguinhas pedia justiça para os pobres','Capela: procure entre os bilhetes da parede'],8:['A corda arrebentou três vezes porque ele era inocente','Capela: converse com a Dona Marlene'],
+ 9:['A Tiana viu o espírito do Chaguinhas','Largo: fique atento à Tiana'],10:['A corda original está com o Guilherme','Largo: arranque a corda do Barros'],
+ 11:['A inscrição na cruz: "Aqui morreu um inocente"','Largo: a Nathalia lê o latim na base da cruz'],12:['A verdade de 1821 foi contada','Final: o destino da corda']};
+
+async function scare3(n,t){if(S.flags.guia){n=Math.max(0,n-1);if(!n){await narr('A guia da Renata esquenta no peito. O medo passa.');return}}return scare(n,t)}
+function gPose(n,k){if(!gEl)return;const c=cur();let p=$('#gpose');if(!p){p=new Image();p.id='gpose';p.className='spr';p.style.cssText='position:absolute;transform:translateX(-50%);image-rendering:pixelated;pointer-events:none;z-index:5';$('#sprites').appendChild(p)}
+  p.src=IMG(n);const h=Math.round(c.gh*k);p.style.height=h+'px';p.style.left=gx+'px';p.style.top=(c.base-h)+'px';gEl.style.opacity=0}
+function gPoseOff(){const p=$('#gpose');if(p)p.remove();if(gEl)gEl.style.opacity=''}
+function ally(n){return (S.rel&&S.rel[n]||0)>0}
+
+/* 1. Delegacia, madrugada */
+SC.delegacia3={amb:'delegacia',img:'delegacia',f:'brightness(.8) saturate(.9)',base:687,gh:410,range:[150,330],start:240,rain:.04,
+  sprites:()=>[{id:'eduardo',img:'ed0',x:455,y:687,h:380,anim:'eduardo',flip:1},{id:'joana',img:'joa0',x:640,y:687,h:395,flip:1,anim:'joana'},{id:'andre',img:'anc0',x:905,y:790,h:520,flip:1,anim:'andre'}],
+  hots:[
+    {l:'Janela',r:[0,140,230,270],x:250,olhar:'Madrugada do dia 19. A chuva não deu trégua desde segunda.'},
+    {l:'Mural das vítimas',r:[660,195,335,230],olhar:'Agora tem uma foto nova no mural: o Barros. Com um X vermelho em cima.'},
+    {l:'Telefone',r:[712,420,80,55],olhar:'O telefone da delegacia.',usar:'Já liguei para todo mundo que eu conheço.'}
+  ],
+  npc:{
+    eduardo:{l:'Seu Eduardo',olhar:'Seu Eduardo, o taxista do Opala. Torce o boné nas mãos. Nunca vi ele assim.',
+      falar:async()=>{if(S.pistas.includes(2))return say('eduardo','Debaixo do Minhocão, doutor. Eu levo o senhor lá. É o mínimo.');
+        await say('eduardo','Doutor Guilherme... eu tenho que contar uma coisa. Faz quarenta anos que eu não durmo direito.');await hold('eduardo','ed6');
+        await say('eduardo','Setembro de 54. Eu era moço, primeiro ano de táxi. Uns homens de capuz me pagaram para levar um embrulho até a Consolação.');
+        await say('eduardo','O embrulho se mexia, doutor. Era um homem. O Antônio Medeiros. Seu avô.');sprEl('eduardo')._hold=null;
+        await pista(1,'em 1954, o Seu Eduardo levou os encapuzados de táxi, sem saber o que era.');
+        const r=await escolha(['Perdoar: "O senhor era um menino. A culpa é deles, não sua."','Cobrar: "Quarenta anos calado? Meu avô morreu por isso!"']);
+        if(r===0){S.flags.perdoou=1;rel('eduardo',1);rel('andre',1);await G('O senhor era um menino. A culpa é deles, não sua.');await hold('eduardo','ed5',1400);await say('eduardo','...Deus lhe pague, doutor.')}
+        else{rel('eduardo',-1);await G('Quarenta anos calado? Meu avô morreu por isso!');await say('andre','Ei. Ele é meu pai, Medeiros. Ele está tentando consertar.')}
+        await say('eduardo','Depois do serviço, eles mandaram eu deixar o carro debaixo de onde hoje é o Minhocão. Eles ainda se encontram lá. Eu vejo o carro preto passando.');
+        await pista(2,'o esconderijo da Irmandade fica debaixo do Minhocão.');await liberar('minhocao','Esconderijo debaixo do Minhocão')}},
+    joana:{l:'Delegada Joana',olhar:'A delegada Joana. Não dormiu. O distintivo parece pesar no peito dela.',
+      falar:async()=>{if(!S.flags.joa3){S.flags.joa3=1;await say('joana','Vinte anos eu confiei no Barros. Vinte anos.');await say('joana','Ele disse para eu perguntar ao meu pai. Eu perguntei. E o meu pai chamou o meu avô.')}
+        else await say('joana',S.flags.policia||S.flags.perdoou?'Se precisar da gente amanhã à noite, é só chamar. Eu e meu pai vamos.':'Faça o que tiver que fazer, Guilherme. Eu não posso sair daqui sem ordem.')}},
+    andre:{l:'André',olhar:'André, escrivão. Pela primeira vez sem café na mão.',falar:async()=>say('andre','Meu pai carregou isso a vida inteira. Escuta ele até o fim, Medeiros.')}
+  },
+  async enter(){if(!S.flags.ini3){S.flags.ini3=1;await narr('São Paulo, madrugada de 19 de setembro de 1994. Falta um dia para o vinte.');await narr('O Barros sumiu com a corda. A delegada Joana chamou o Guilherme na delegacia.');
+    if(S.flags.seguir)await narr('O Nori seguiu o rastro do Barros até debaixo do Minhocão. Mas antes, a Joana quer falar com você.');await say('joana','Guilherme. Meu avô tem uma coisa para te contar.')}}
+};
+
+/* 2. Esconderijo debaixo do Minhocão */
+SC.minhocao={img:'minhocao',amb:'chuva|tunel',rua:1,f:'none',base:672,gh:360,range:[120,720],start:160,follow:'tiana',follow2:'nori',
+  sprites:()=>S.flags.vigia===1?[{id:'encap',img:'en0',x:870,y:600,h:300,anim:'encap',flip:1}]:[],
+  hots:[
+    {l:'Livro de atas',r:[330,375,130,60],x:420,olhar:async()=>lerAtas(),pegar:async()=>lerAtas()},
+    {l:'Capuz no caixote',r:[590,380,125,110],x:620,olhar:'Um capuz marrom, igual aos da seita.',pegar:async()=>{if(has('capuz'))return G('Já peguei.');give('capuz');await G('Pode ser útil. Ninguém olha duas vezes para um encapuzado no meio de outros.')}},
+    {l:'Três nós no pilar',r:[270,200,100,120],x:330,olhar:'Três forcas pequenas penduradas no pilar. O símbolo da Irmandade.'},
+    {l:'Carro preto',r:[760,320,225,110],x:700,olhar:async()=>{await narr('Um Opala preto, igual ao do Seu Eduardo, só que sem placa. No banco de trás, velas pretas e uma lista com endereços.');if(!S.flags.carro){S.flags.carro=1;await G('É o carro preto que passa pelo Largo todo ano.')}}},
+    {l:'Lona',r:[350,110,400,250],olhar:'Uma lona rasgada. Embaixo, cobertores e cinzas de fogueira.'}
+  ],
+  npc:{encap:{l:'Vigia encapuzado',olhar:'Um vigia de capuz, vindo na minha direção.',falar:async()=>narr('Ele não responde. Só aperta o passo.')}},
+  async enter(){if(!S.flags.minh1){S.flags.minh1=1;await narr('Debaixo do Minhocão. Carros passam lá em cima e o concreto treme.');
+    if(S.flags.seguir&&!S.pistas.includes(2)){await narr('O Nori fareja o chão e para, abanando o rabo. O rastro do Barros termina aqui.');await pista(2,'o esconderijo da Irmandade fica debaixo do Minhocão.')}}}
+};
+async function lerAtas(){if(S.pistas.includes(3))return narr('Já li o que precisava. Meia-noite do vinte, no Largo.');
+  await narr('Um livro de atas, com capa preta e letra caprichada. A última página tem a data de hoje.');
+  await narr('"20 de setembro de 1994. Meia-noite. Largo da Forca. A corda volta ao pescoço do último Medeiros."');await pista(3,'o ritual será à meia-noite do dia 20, no Largo da Forca.');
+  await narr('Embaixo, sete assinaturas. A primeira: L. I. Barros.');await pista(4,'a Irmandade tem sete encapuzados.');
+  await sleep(500);SFX.growl();latir();await narr('A Tiana rosna para a rua antes de qualquer barulho.');S.flags.vigia=1;renderSprites();SFX.sting();
+  const r=await escolha(['Esconder atrás do pilar com os cachorros.','Enfrentar o vigia.']);
+  if(r===0){await narr('Me encolho atrás do pilar. O vigia passa a dois metros, entra no carro e vai embora.')}
+  else{await narr('Vou para cima dele. Ele saca um porrete.');SFX.fx('briga',.9);await hurt(2,'O porrete acerta o ombro. Ele foge no carro preto.')}
+  S.flags.vigia=2;renderSprites();await G('Preciso de ajuda para isso. E de proteção. A Vó sempre falava de uma mãe de santo na zona leste: a Renata.');await liberar('terreiro','Terreiro da Renata')}
+
+/* 3. Terreiro da Renata */
+SC.terreiro={img:'terreiro',amb:'atabaques|chuva-dentro',f:'brightness(.78) saturate(.9)',base:687,gh:400,range:[240,800],start:780,follow:'tiana',
+  sprites:()=>{const a=[{id:'renata',img:'rn0',x:600,y:660,h:375,anim:'renata',flip:1}];if(S.flags.miguel)a.push({id:'miguel',img:'mg0',x:880,y:680,h:345,anim:'miguel',flip:1});return a},
+  hots:[
+    {l:'Congá',r:[385,120,250,290],x:520,olhar:'O altar, com santos, flores, fitas coloridas e velas brancas. Cheiro de alfazema.'},
+    {l:'Atabaques',r:[60,340,200,200],x:260,olhar:'Os atabaques. Mesmo parados, parece que ainda vibram.',usar:'Não se toca atabaque de outro terreiro sem licença.'},
+    {l:'Ervas',r:[0,0,270,200],x:260,olhar:'Arruda, guiné, alecrim. Secando para os banhos.'},
+    {l:'Porta',r:[735,90,130,410],olhar:'A rua lá fora, molhada e vazia.'}
+  ],
+  npc:{
+    renata:{l:'Renata',olhar:'Renata, mãe de santo. Turbante branco, guias no pescoço e um olhar que atravessa a gente.',
+      falar:async()=>{if(S.flags.renata)return say('renata',S.flags.guia?'Não tire a guia, meu filho. Nem para dormir.':'A porta continua aberta, se mudar de ideia.');
+        S.flags.renata=1;await say('renata','Eu sabia que você vinha. A sua avó me ligou faz uma semana.');await say('renata','Escuta, Guilherme: o Chaguinhas não quer vingança. Ele quer justiça. Quer que contem a verdade.');
+        await pista(5,'o Chaguinhas quer justiça, não vingança.');await hold('renata','rn4');
+        const r=await escolha(['Aceitar a guia de proteção com respeito.','"Com todo o respeito, eu não acredito nessas coisas."']);sprEl('renata')._hold=null;
+        if(r===0){rel('renata',1);await G('Eu aceito. Obrigado, Renata.');await hold('renata','rn5',1500);await say('renata','Que os seus guardem você. Isso protege a cabeça.');give('guia');S.flags.guia=1}
+        else{rel('renata',-1);await G('Com todo o respeito, eu não acredito nessas coisas.');await say('renata','Não precisa acreditar. Mas o que está atrás de você acredita.')}
+        await sleep(400);SFX.fx('telefone',.5);await narr('O telefone do terreiro toca. É a Vó Maria Izabel.');
+        await say('izabel','Meu filho... eu acendi uma vela para você e outra para o Chaguinhas. Reza comigo: que a verdade venha à tona.');await say('izabel','E leva o Miguel com você. Ele está indo aí de bicicleta.');
+        await atabParar();await chegaMiguel()}},
+    miguel:{l:'Miguel',olhar:'Miguel, meu sobrinho de quinze anos. Boné para trás, rádio no ombro e coragem de sobra.',
+      falar:async()=>say('miguel',S.flags.ayr?'Tô com o rádio ligado, tio. Qualquer coisa eu aviso.':'Bora pro bar do Seu Ayrton, tio! Fica no Largo.')}
+  },
+  async enter(){if(!S.flags.terr1){S.flags.terr1=1;await narr('Um terreiro de umbanda na zona leste. Os atabaques param quando o Guilherme entra.');await say('renata','Entra, filho de Medeiros. Tira a chuva das costas.')}}
+};
+async function atabParar(){SFX.fadeOut(SFX.ambSrc,1);SFX.ambSrc=null;SFX.ambName=null;await narr('De repente, os atabaques param sozinhos.');SFX.growl();latir();SFX.sting();await narr('Um vulto de farda passa pela porta, descalço, e some na chuva.');
+  await scare3(1,'Um frio sobe pela espinha.');SFX.amb(cur().amb)}
+async function chegaMiguel(){S.flags.miguel=1;renderSprites();const m=sprEl('miguel');if(m){m.style.left='1060px';await moveSpr('miguel',880,['mg0','mg7'],1200)}
+  await say('miguel','Tio! A Nathalia mandou eu te achar. Ela disse que o Barros vai fazer tudo no Largo da Forca.');
+  await say('miguel','E o Seu Ayrton, do bar do motoclube, falou que todo ano tem coisa estranha lá. Ele quer falar com você.');await G('Então vamos para o bar. Você vai de bicicleta na frente.');await liberar('bar','Bar do Motoclube')}
+
+/* 4. Bar do Motoclube */
+SC.bar={img:'bar',amb:'jukebox|chuva-dentro',f:'none',base:684,gh:400,range:[200,780],start:640,follow:'tiana',follow2:'nori',
+  sprites:()=>[{id:'ayrton',img:'ay0',x:470,y:660,h:385,anim:'ayrton'},{id:'beth',img:'be0',x:720,y:670,h:365,anim:'beth',flip:1},{id:'miguel',img:'mg0',x:880,y:680,h:345,anim:'miguel',flip:1}],
+  hots:[
+    {l:'Jukebox',r:[30,260,90,160],x:220,olhar:'Uma jukebox de 1970. Tocando rock baixinho.',usar:async()=>{SFX.fx('jukebox',.5);await narr('Ponho uma ficha. Um rock antigo enche o bar. A Beth sorri.')}},
+    {l:'Moto',r:[495,330,200,90],x:600,olhar:'Uma moto antiga, polida como joia. O xodó do Ayrton.',usar:'Nem pensar. O Ayrton me mata.'},
+    {l:'Brasão do motoclube',r:[505,160,150,110],olhar:'Uma caveira com asas. O brasão do motoclube do Ayrton.'},
+    {l:'Fotos antigas',r:[430,160,70,110],olhar:'Fotos do motoclube nos anos 70. O Ayrton com cabelo! Inacreditável.'},
+    {l:'Janela',r:[690,130,230,200],x:780,olhar:'Pela janela dá para ver a cruz do Largo da Forca. A chuva escorre no vidro.'},
+    {l:'Escada',r:[810,230,214,240],x:780,olhar:'A escada para os quartos de cima. O quarto da frente dá vista para o Largo.',andar:async()=>esperarMeiaNoite()},
+    {l:'Sinuca',r:[0,410,200,140],x:220,olhar:'A mesa de sinuca. Um taco esquecido em cima.'}
+  ],
+  npc:{
+    ayrton:{l:'Ayrton',olhar:'Ayrton, fundador do motoclube. Colete de couro, bandana e cara de quem já viu de tudo.',
+      falar:async()=>{if(S.flags.ayr)return say('ayrton',S.flags.moto?'Os rapazes estão avisados. Meia-noite, motor ligado.':'Boa sorte, Guilherme. Você vai precisar.');
+        S.flags.ayr=1;await say('ayrton','Então você é o tio do Miguel. Senta aí.');await say('ayrton','Trinta anos com esse bar, Guilherme. Todo 20 de setembro, um carro preto estaciona do lado da cruz à meia-noite. Uns caras de capuz descem, rezam e vão embora.');
+        await pista(6,'todo 20 de setembro, um carro preto estaciona no Largo.');
+        const r=await escolha(['Pedir ajuda ao motoclube: "Amanhã eles vão tentar me enforcar. Preciso de vocês."','Oferecer dinheiro: "Eu pago pela ajuda de vocês."','Não envolver ninguém: "Isso é problema meu."']);
+        if(r===0){S.flags.moto=1;rel('ayrton',1);await G('Amanhã eles vão tentar me enforcar ali. Preciso de vocês.');await hold('ayrton','ay5',1200);await say('ayrton','Motoclube não deixa família na mão. Meia-noite, a gente vai estar lá.')}
+        else if(r===1){rel('ayrton',-1);await G('Eu pago pela ajuda de vocês.');await say('ayrton','Guarda seu dinheiro. Aqui ninguém se vende.')}
+        else{await G('Isso é problema meu.');await say('ayrton','Teimoso que nem eu. Mas a porta fica aberta.')}
+        await G('E a capela? Quem tem a chave?');await say('ayrton','A Dona Marlene. Cuida daquilo há cinquenta anos. Fala com ela antes de meia-noite.');await liberar('capela3','Capela dos Aflitos')}},
+    beth:{l:'Beth',olhar:'Beth, a dona do bar. Avental, pano no ombro e um sorriso que acalma.',
+      falar:async()=>{if(S.flags.cafe)return say('beth','Quando tudo acabar, você volta aqui para jantar. Isso é uma ordem.');
+        S.flags.cafe=1;rel('beth',1);await hold('beth','be4',1200);await say('beth','Toma um café, meu filho. Você está branco que nem papel.');S.san=Math.min(10,S.san+2);drawHud();toast('SANIDADE +2',1600);
+        await say('beth','O quarto de cima é seu. Dá para ver o Largo inteiro da janela. Quando chegar a hora, é só subir.')}},
+    miguel:{l:'Miguel',olhar:'Miguel, com o rádio do motoclube no ombro.',falar:async()=>say('miguel','Eu fico de vigia na janela, tio. Quando o carro preto chegar, eu aviso no rádio.')}
+  },
+  async enter(){if(!S.flags.bar1){S.flags.bar1=1;await narr('O Bar do Motoclube, de frente para o Largo da Forca. Cheiro de café, cerveja e gasolina.')}}
+};
+async function esperarMeiaNoite(){if(!S.pistas.includes(8))return G('Ainda não. Preciso falar com a Dona Marlene, na capela.');
+  await narr('Subo para o quarto da Beth. O Miguel cola o rosto na janela. As horas se arrastam.');await fadeTo('largo3')}
+
+/* 5. Capela dos Aflitos por dentro */
+SC.capela3={img:'capela3',amb:'capela|chuva-dentro',f:'brightness(.62) contrast(1.05)',base:684,gh:390,range:[330,820],start:700,follow:'tiana',
+  sprites:()=>[{id:'marlene',img:'ml0',x:760,y:640,h:350,anim:'marlene',flip:1}],
+  hots:[
+    {l:'Parede de bilhetes',r:[0,60,320,450],x:340,olhar:async()=>bilhetes(),pegar:async()=>bilhetes()},
+    {l:'Velas',r:[20,450,340,237],x:380,olhar:'Centenas de velas. Cada uma é um pedido.'},
+    {l:'Corda do sino',r:[895,10,70,460],x:820,olhar:'A corda do sino. Grossa e velha.',usar:async()=>say('marlene','Não mexe! Esse sino só toca na hora certa.'),pegar:async()=>say('marlene','Não mexe! Esse sino só toca na hora certa.')},
+    {l:'Altar',r:[530,180,140,200],olhar:'O altar simples, com um crucifixo. A capela mais pobre e mais visitada do centro.'},
+    {l:'Bancos',r:[310,340,580,150],olhar:'Bancos de madeira gastos de tanto joelho.'}
+  ],
+  npc:{marlene:{l:'Dona Marlene',olhar:'Dona Marlene, zeladora da capela há cinquenta anos. Terço numa mão, molho de chaves na outra.',
+    falar:async()=>{if(S.flags.marl)return say('marlene',S.flags.sino?'À meia-noite eu toco o sino. Pode contar comigo.':'Vai com Deus, moço.');
+      S.flags.marl=1;await say('marlene','Capela fechada, moço. Já passa das dez.');
+      const r=await escolha(['"A senhora cuida disso há cinquenta anos? Obrigado por manter essa memória viva."','"Desculpa, é urgente. Preciso ver os bilhetes agora."']);
+      if(r===0){S.flags.sino=1;rel('marlene',1);await G('A senhora cuida disso há cinquenta anos? Obrigado por manter essa memória viva.');await hold('marlene','ml5',1400);await say('marlene','...Ninguém me agradece faz tempo, moço. Entra.')}
+      else{rel('marlene',-1);await G('Desculpa, é urgente. Preciso ver os bilhetes agora.');await say('marlene','Urgente é a fé do povo que deixa bilhete aqui. Mas entra.')}
+      await say('marlene','O senhor sabe por que esse santo é tão querido? Porque a corda arrebentou três vezes. Três! O povo gritava: é sinal, ele é inocente!');
+      await say('marlene','Enforcaram assim mesmo. Na quarta vez.');await pista(8,'a corda arrebentou três vezes porque o Chaguinhas era inocente.');
+      if(S.flags.sino)await say('marlene','Se o senhor precisar, à meia-noite eu toco o sino. Sino de capela espanta coisa ruim.');
+      await apagaVelas()}}},
+  async enter(){if(!S.flags.cap31){S.flags.cap31=1;await narr('A Capela dos Aflitos por dentro. Paredes cobertas de bilhetes, velas por todo o chão.')}}
+};
+async function bilhetes(){if(S.pistas.includes(7))return narr('Milhares de pedidos. Emprego, saúde, amor. E justiça.');
+  await narr('Procuro entre os bilhetes. Lá no alto, atrás de um prego velho, um papel amarelado e quebradiço.');await narr('"Peço justiça para os soldados pobres que não recebem soldo. Francisco José das Chagas, 1821."');
+  give('bilhete');await pista(7,'o bilhete de 1821: o Chaguinhas pedia justiça para os pobres.');await G('Ele morreu porque pediu o pagamento dos soldados. Só isso.')}
+async function apagaVelas(){await sleep(400);SFX.sting();await narr('Todas as velas da capela apagam ao mesmo tempo. Silêncio absoluto.');await scare3(1,'Na escuridão, alguém respira perto do seu ouvido.');
+  await narr('Uma por uma, as velas acendem de novo.');await say('marlene','Ele está inquieto hoje, moço. Está esperando a meia-noite também.');
+  await G('Hora de voltar para o bar e esperar.');toast('SUBA A ESCADA DO BAR QUANDO ESTIVER PRONTO',3000)}
+
+/* 6. Largo da Forca, meia-noite */
+SC.largo3={img:'largo3',amb:'vento|chuva',rua:1,showRain:1,trovao:1,f:'none',base:676,gh:330,range:[90,330],start:130,follow:'tiana',follow2:'nori',
+  sprites:()=>{const f=S.flags,a=[];
+    if(!f.cordaTomada)a.push({id:'barros',img:'bc0',x:540,y:560,h:300,anim:'barrosR'});else if(!f.fimL)a.push({id:'barros',img:'bc3',x:600,y:560,h:160});
+    if(!f.motoLuz){a.push({id:'encap',img:'en0',x:380,y:545,h:250,anim:'encap'});a.push({id:'encap2',img:'en0',x:700,y:545,h:250,anim:'encap',flip:1})}
+    if(f.espirito)a.push({id:'esp',img:'cg0',x:620,y:520,h:300,anim:'esp'});
+    (f.aliados||[]).forEach(k=>{const A={joana:{id:'joana',img:'ja0',x:840,y:676,h:330,anim:'joanaA',flip:1},sarah:{id:'sarah',img:'sc0',x:360,y:676,h:300,anim:'sarahF'},pedro:{id:'pedro',img:'pw0',x:250,y:676,h:320,anim:'pedroW'},nathalia:{id:'nathalia',img:'nl0',x:470,y:676,h:320,anim:'nathL'},marlene:null,moto:null,renata:null,theo:{id:'theo',img:'th3',x:975,y:676,h:290,anim:'theo',flip:1}}[k];if(A)a.push(A)});
+    return a},
+  hots:[{l:'Cruz',r:[390,40,250,440],olhar:'A cruz do Largo, com a forca pendurada. Foi aqui que tudo começou.'},{l:'Carro preto',r:[690,320,320,120],olhar:'O carro preto da Irmandade.'},{l:'Capela',r:[0,60,330,340],olhar:'A capela. Lá dentro, a Dona Marlene espera a meia-noite.'}],
+  npc:{
+    barros:{l:'Barros',olhar:()=>narr(S.flags.cordaTomada?'O Barros, de joelhos no chão molhado.':'O Barros, no meio do círculo, com a corda nas mãos.'),
+      falar:async()=>say('barros',S.flags.cordaTomada?'Isso não acaba comigo, Medeiros...':'Venha, Medeiros. Seu avô também veio andando.'),
+      pegar:async()=>tomarCorda(),usar:async()=>tomarCorda()},
+    encap:{l:'Encapuzado',olhar:'Um dos sete encapuzados.',falar:async()=>narr('Ele só continua cantando.')},
+    encap2:{l:'Encapuzado',olhar:'Outro encapuzado.',falar:async()=>narr('Ele só continua cantando.')},
+    esp:{l:'Chaguinhas',olhar:'O espírito do Chaguinhas. Um soldado descalço, com a corda arrebentada no pescoço.',falar:async()=>escolhaFinal(),usar:async()=>escolhaFinal()},
+    tiana:{l:'Tiana',olhar:'A Tiana, de pelo eriçado.',falar:async()=>narr('A Tiana não tira os olhos da cruz.')},
+    joana:{l:'Delegada Joana',olhar:'A Joana, de arma em punho.',falar:async()=>say('joana','Eu cuido deles. Vai!')},
+    sarah:{l:'Mestra Sarah',olhar:'A Mestra Sarah, gingando.',falar:async()=>say('sarah','Iê! Vai, Guilherme!')},
+    pedro:{l:'Pedro',olhar:'O Pedro, com o walkman.',falar:async()=>say('pedro','Tô contigo, chefe!')},
+    nathalia:{l:'Nathalia',olhar:'A Nathalia, de lanterna na mão, lendo a base da cruz.',falar:async()=>say('nathalia','Estou aqui, Guilherme.')},
+    theo:{l:'Theo',olhar:'O Theo, rezando com uma vela.',falar:async()=>say('theo','Rezamos por você.')}
+  },
+  async enter(){if(S.flags.lg1)return;S.flags.lg1=1;S.flags.aliados=[];await climax()}
+};
+async function chega(k,txt){S.flags.aliados.push(k);renderSprites();if(txt)await narr(txt)}
+async function climax(){const f=S.flags;let al=0;
+  await narr('Meia-noite menos cinco. 20 de setembro de 1994.');await say('miguel','(no rádio) Tio! O carro preto chegou! São sete!');SFX.fx('cantico2',.8);
+  await say('barros','Medeiros! Desça. Ou eu vou buscar a sua família, um por um.');await G('Estou aqui, Barros.');
+  if(f.moto){SFX.fx('motos',1);await sleep(800);$('#flashw').style.transition='opacity .2s';$('#flashw').style.opacity=.85;await sleep(300);$('#flashw').style.transition='opacity 2s';$('#flashw').style.opacity=0;
+    f.motoLuz=1;renderSprites();await narr('Quinze motos cercam o Largo e acendem os faróis de uma vez. Os encapuzados ficam cegos e se espalham.');await say('ayrton','Ninguém mexe com a família do motoclube!');al++}
+  else{await narr('Dois encapuzados vêm para cima de você.');await hurt(1,'Um empurrão contra as pedras molhadas.')}
+  if(f.sino){SFX.fx('sino12',.9);await narr('Na capela, a Dona Marlene toca o sino. Doze badaladas. O cântico da seita falha.');al++}else await scare3(1,'O cântico fica mais alto. Dói na cabeça.');
+  if(f.policia||f.perdoou){SFX.fx('sirene',.9);await sleep(800);await chega('joana','A sirene corta a chuva. A Joana e o André descem da viatura.');await say('joana','Polícia! Todo mundo no chão!');al++}
+  else await hurt(1,'Sem a polícia, um encapuzado te acerta pelas costas.');
+  if(ally('sarah')){await chega('sarah','A Mestra Sarah entra gingando. Uma meia-lua, uma armada, e dois encapuzados vão ao chão.');al++}else await hurt(1,'Um encapuzado te segura pelo braço. Você se solta com dificuldade.');
+  if(ally('pedro')){await chega('pedro');await say('pedro','Ei, seita! Escuta isso!');SFX.fx('walkman',.8);await narr('O Pedro toca a fita gravada no cativeiro. As vozes deles mesmos, confessando. Os encapuzados se olham, confusos.');al++}
+  if(ally('nathalia')||f.nathVem){await chega('nathalia','A Nathalia corre até a base da cruz com uma lanterna.');al++}
+  if(f.guia){await narr('A guia da Renata esquenta no seu peito. A cabeça clareia.');al++}
+  if(ally('theo')&&ally('chico')){await chega('theo','O Theo e o Velho Chico chegam pela rua da capela, com velas acesas, rezando.');S.san=Math.min(10,S.san+3);drawHud();toast('SANIDADE +3',1600);al++}
+  f.al=al;salvar();await narr(`Aliados ao seu lado: ${al}.`);await G('Agora é comigo. A corda.');toast('PEGUE A CORDA DO BARROS',3000)}
+async function tomarCorda(){const f=S.flags;if(f.cordaTomada)return narr('A corda já está comigo.');
+  await narr('Avanço para dentro do círculo de velas.');await hold('barros','bc2',0);await say('barros','Ela é minha! É da minha família há cento e setenta anos!');
+  SFX.fx('briga',.9);await narr('Agarro a corda. O Barros puxa de um lado, eu puxo do outro.');if((f.al||0)<4)await hurt(1,'A corda queima as mãos.');
+  f.cordaTomada=1;renderSprites();give('corda');await pista(10,'a corda original está com o Guilherme.');await narr('O Barros escorrega nas pedras e cai de joelhos.');
+  await sleep(400);const t=sprEl('tiana');if(t){t._hold='tm1';t.src=IMG('tm1')}SFX.bark();await sleep(300);SFX.bark();await narr('A Tiana late para o alto da cruz, com o pelo todo eriçado. Ela viu primeiro.');await pista(9,'a Tiana viu o espírito do Chaguinhas.');
+  SFX.fx('grito',.8);f.espirito=1;renderSprites();glowEsp();if(t){t._hold='tm2';t.src=IMG('tm2')}await narr('Diante da cruz, um soldado descalço surge da chuva. A corda arrebentada no pescoço.');await scare3(2,'É ele. O Chaguinhas.');
+  if(ally('nathalia')||f.nathVem){await say('nathalia','Guilherme! Tem uma inscrição na base da cruz, em latim: "Hic innocens mortuus est". Aqui morreu um inocente.');await pista(11,'a inscrição na cruz: "Aqui morreu um inocente".')}
+  else await G('Tem alguma coisa escrita na base da cruz, em latim. Não consigo ler...');
+  toast('FALE COM O ESPÍRITO',3000)}
+function glowEsp(){const e=sprEl('esp');if(e){e.style.opacity=.82;e.style.filter='drop-shadow(0 0 14px #9fd0ff) brightness(1.15)';e.animate([{transform:'translateX(-50%) translateY(0)'},{transform:'translateX(-50%) translateY(-10px)'},{transform:'translateX(-50%) translateY(0)'}],{duration:3200,iterations:Infinity})}}
+async function escolhaFinal(){const f=S.flags;if(!f.cordaTomada||f.fimL)return;
+  await hold('esp','cg2',0);await narr('O espírito estende a mão aberta para você. Para a corda.');
+  const r=await escolha(['Pedir perdão em nome dos Medeiros e entregar a corda.','Destruir a corda no fogo das velas e enfrentar o espírito.']);f.fimL=1;
+  if(r===0){f.final='perdao';gPose('gk1',.74);await G('Chaguinhas... em nome da minha família, eu peço perdão. Você era inocente. Todo mundo vai saber.');
+    take('corda');await sleep(600);await hold('esp','cg5',0);glowEsp();await narr('O espírito sorri. A corda se desfaz em pó nas mãos dele.')}
+  else{f.final='fogo';gPose('gc0',1.15);await G('Acabou! Essa corda não mata mais ninguém!');await sleep(700);gPose('gc1',.9);SFX.fx('fogo',.9);take('corda');
+    await hold('esp','cg4',0);glowEsp();SFX.fx('grito',.9);await narr('A corda pega fogo nas velas pretas. O espírito grita, e o vento apaga tudo de uma vez.');await scare3(1,'Por um segundo, o mundo fica escuro.')}
+  const e=sprEl('esp');if(e){e.style.transition='opacity 2.5s';e.style.opacity=0}await sleep(2600);gPoseOff();
+  const bom=(f.al||0)>=5;f.fimTipo=bom?(r===0?'justica':'fogo'):'aberto';
+  if(f.fimTipo==='justica'){await narr('A chuva para. Pela primeira vez em uma semana, aparecem estrelas sobre o Largo.');await say('joana','Luiz Inácio Barros, você está preso.');}
+  else if(f.fimTipo==='fogo'){await narr('Quando as luzes voltam, o Barros não está mais lá. Só o capuz dele, vazio, no chão molhado.');await G('O Chaguinhas levou ele. Acabou.')}
+  else{await narr('No meio da confusão, o Barros some. Leva junto um pedaço da corda.');await G('Ele fugiu... A maldição não terminou.')}
+  await pista(12,'a verdade de 1821 foi contada.');await sleep(800);await epilogo()}
+
+/* 7. Epílogo e créditos */
+async function epilogo(){const f=S.flags,T=f.fimTipo;S.flags.fim=1;salvar();SFX.fadeOut(SFX.ambSrc,1);SFX.ambSrc=null;SFX.ambName=null;await sleep(600);SFX.amb('creditos|musica2|musica');
+  const tit={justica:'FINAL DA JUSTIÇA',fogo:'FINAL DO FOGO',aberto:'FINAL ABERTO'}[T];
+  const linhas=[
+    ['sebo',`<b>${tit}</b><br><br>Algumas semanas depois...`],
+    ['sebo','O Sebo Medeiros reabriu. Na vitrine, um livro novo: <i>"Chaguinhas, o inocente do Largo da Forca"</i>, por Guilherme Medeiros e Nathalia Salustiano.'],
+    ['sebo',ally('pedro')?'O Pedro foi efetivado. Agora tem crachá, mesa própria e um walkman novo.':'O Pedro voltou a trabalhar no sebo. Ainda olha para o porão de lado.'],
+    ['delegacia',T==='justica'?'O Barros foi condenado. A Joana virou delegada titular, e o André finalmente tirou férias.':T==='fogo'?'Do Barros, nunca mais se ouviu falar. A Joana virou delegada titular.':'O Barros continua foragido. A Joana jurou que vai encontrá-lo.'],
+    ['bar',f.moto?'O motoclube fez uma festa no bar do Ayrton que durou três dias. A Beth fez feijoada para cem.':'A Beth guardou o jantar prometido. O Ayrton ainda reclama que não foi chamado.'],
+    ['capela3','A Dona Marlene pendurou o bilhete de 1821 numa moldura, ao lado do altar.'],
+    ['sala','A Vó Maria Izabel acendeu uma vela para o Chaguinhas e rezou pela família inteira.'],
+    ['catedral','O Seu Eduardo voltou a dormir a noite inteira. E o Opala ganhou um adesivo do motoclube.'],
+    ['sebo','O Nori ganhou um pote só para ele. A Tiana ainda late para o porão, de vez em quando.'],
+    [T==='aberto'?'largo3':'capa2',T==='aberto'?'Mas, todo 20 de setembro, um carro preto ainda passa pelo Largo da Forca...':'E no Largo da Forca, a corda nunca mais rangeu.']];
+  for(const [bg,t] of linhas){await overlay(`<div style="max-width:900px;margin:auto;font-size:30px;line-height:1.3;background:rgba(0,0,0,.6);padding:24px 30px">${t}</div><div class="btn small" data-k="x" style="margin-top:22px;min-width:180px">CONTINUAR</div>`,bg)}
+  await creditos();try{localStorage.setItem('pecados_fim','1');localStorage.removeItem('pecados_v1')}catch(e){}closeOv();inicio()}
+async function creditos(){const el=[['Guilherme Medeiros','o último Medeiros'],['Nathalia Salustiano','sócia do sebo'],['Pedro Onishi','o estagiário'],['Joana Medeiros','a delegada'],['André Campo Piano','o escrivão'],['Eduardo Campo Piano','o taxista'],['Sarah Souza','a capoeirista'],['Helena Souza','a legista'],['Vó Maria Izabel','a guardiã do baú'],['Theo','o monge'],['Francisco, o Velho Chico','o coveiro'],['Renata','a mãe de santo'],['Dona Marlene','a zeladora'],['Ayrton','o motoclube'],['Beth','a dona do bar'],['Miguel','o mensageiro'],['Nori e Tiana','como eles mesmos']];
+  let h='<div style="background:rgba(0,0,0,.72);padding:16px 30px;width:1150px;margin:auto"><div class="title" style="font-size:34px">OS PECADOS DA FORCA</div><p style="font-size:26px">Escrito por José Guilherme</p><p style="font-size:24px;color:#d9c48a">Estrelando a nossa família</p><div style="font-size:21px;line-height:1.3;columns:2;column-gap:40px;margin:10px auto;text-align:left">';
+  el.forEach(([a,b])=>h+=`<div>${a} <i style="color:#9aa6b4">— ${b}</i></div>`);
+  h+='</div><p style="font-size:22px;color:#9aa6b4">Em memória de Francisco José das Chagas, o Chaguinhas (1821).</p><div class="btn" data-k="x" style="display:inline-block;min-width:260px">FIM</div></div>';
+  await overlay(h,'capa')}
 
 /* ---------------- MOTOR ---------------- */
 let gx=0,gdir=1,gEl=null;
@@ -963,6 +1214,21 @@ const ANIMS={
 };
 const NATHPOSE={sit:{id:'nathalia',img:'ns0',x:72,y:578,h:228,anim:'nath'},livro:{id:'nathalia',img:'nl0',x:95,y:615,h:330,anim:'nathL'},cabelo:{id:'nathalia',img:'nc0',x:95,y:615,h:330,anim:'nathC'}};
 let nathPose='sit';
+Object.assign(ANIMS,{
+  ayrton:{talk:'ay1',seq:()=>[['ay0',2600],['ay2',1800],['ay0',900],['ay4',1500],['ay0',1200],['ay6',1600]]},
+  beth:{talk:'be1',seq:()=>[['be0',2400],['be4',1300],['be5',1300],['be0',1200],['be2',1600],['be7',1300]]},
+  marlene:{talk:'ml1',seq:()=>[['ml0',2600],['ml2',1500],['ml0',900],['ml5',1300],['ml7',1600]]},
+  renata:{talk:'rn1',seq:()=>[['rn0',2600],['rn2',1500],['rn0',900],['rn3',1400],['rn7',1600]]},
+  miguel:{talk:'mg1',seq:()=>[['mg0',2400],['mg4',1400],['mg5',1200],['mg0',900],['mg2',1500],['mg7',1300]]},
+  eduardo:{talk:'ed1',seq:()=>[['ed0',2400],['ed4',1400],['ed0',900],['ed2',1500],['ed5',1300]]},
+  esp:{talk:'cg1',seq:()=>[['cg0',3000],['cg1',2500]]},
+  barrosR:{talk:'bc1',seq:()=>[['bc0',2600],['bc1',2000],['bc0',1400],['bc2',1300]]},
+  joanaA:{talk:'ja0',seq:()=>[['ja0',4000]]},
+  pedroW:{talk:'pw1',seq:()=>[['pw0',2200],['pw1',2600]]},
+  sarahF:{talk:'sc0',seq:()=>[['sc0',700],['sc1',600],['sc0',700],['sc2',600],['sc0',700],['sc3',800]]},
+  tianaM:{talk:'tm1',seq:()=>[['tm0',2200],['tm1',900],['tm0',1600]]}
+});
+['ay','be','ml','rn','mg','ed','cg','bc','gk','gc','sc','ja','pw','tm'].forEach(p=>{for(let i=0;i<8;i++){const im=new Image();im.src=IMG(p+i)}});
 Object.assign(ANIMS,{
   theo:{talk:'th1',seq:()=>[['th0',2600],['th1',900],['th0',700],['th2',500],['th3',2600],['th4',1400],['th2',400],['th5',1300],['th6',1100],['th7',900]]},
   chico:{talk:'ch4',seq:()=>[['ch0',2600],['ch1',1800],['ch2',900],['ch0',1200],['ch3',1500],['ch5',1200],['ch6',1300],['ch7',1500]]},
@@ -1063,7 +1329,7 @@ async function fadeIn(name,mid){const f=$('#fade');if(name==='sebo')nathPose=['s
   if(c.enter)await c.enter();salvar();}
 function draw(){const c=cur();$('#bg').src=IMG(c.img);setFilter();$('#dark').style.display=c.dark?'block':'none';$('#rain').style.display=c.showRain?'block':'none';SFX.amb(c.amb||'chuva-dentro');trovoada(c);
   renderHots();renderSprites();drawHud();drawInv();drawVerbs();sentence();$('#bmap').style.opacity=taxiOk()?1:.4}
-function taxiOk(){return ['sebo2','mosteiro','cemiterio','se','bueiro','sebo','capelafora','capeladentro','delegacia','redacao','casafora','sala'].includes(S.scene)}
+function taxiOk(){return ['delegacia3','minhocao','terreiro','bar','capela3','sebo2','mosteiro','cemiterio','se','bueiro','sebo','capelafora','capeladentro','delegacia','redacao','casafora','sala'].includes(S.scene)}
 
 async function falha(e){if(e!=='morte'&&e!=='loucura'){console.error(e);return}
   dlgResolve=null;$('#dlg').classList.remove('on');
@@ -1075,7 +1341,7 @@ function closeOv(){$('#ov').classList.remove('on')}
 /* táxi */
 $('#bmap').onclick=async e=>{e.stopPropagation();if(busy||dlgResolve||!taxiOk())return;busy=true;
   const here={capeladentro:'capelafora',sala:'casafora',bueiro:'se'}[S.scene]||S.scene;
-  const dest=S.cap===2?[['sebo2',1],['mosteiro',S.flags.mosteiro],['cemiterio',S.flags.cemit],['se',S.flags.se]]:[['sebo',1],['capelafora',S.flags.capela],['delegacia',S.flags.dp],['redacao',S.flags.ligacao],['casafora',S.flags.ligacao]];
+  const dest=S.cap===3?[['delegacia3',1],['minhocao',S.flags.minhocao||S.flags.seguir],['terreiro',S.flags.terreiro],['bar',S.flags.bar],['capela3',S.flags.capela3]]:S.cap===2?[['sebo2',1],['mosteiro',S.flags.mosteiro],['cemiterio',S.flags.cemit],['se',S.flags.se]]:[['sebo',1],['capelafora',S.flags.capela],['delegacia',S.flags.dp],['redacao',S.flags.ligacao],['casafora',S.flags.ligacao]];
   let h=`<div class="title" style="font-size:26px">TÁXI DO SEU EDUARDO</div><p>Seu Eduardo, pai do André, ao volante do Opala: "Pra onde, doutor? Corrida é CR$ 2.000."</p><p style="font-size:26px;color:#f0d060">Você tem CR$ ${S.cr.toLocaleString('pt-BR')}</p>`;
   dest.forEach(([k,ok])=>{if(ok)h+=`<div class="btn" data-k="${k}" style="${k===here?'opacity:.4':''}">${LOCS[k].toUpperCase()}${k===here?' (AQUI)':''}</div>`});
   h+=`<div class="btn small" data-k="x">FICAR AQUI</div>`;
@@ -1257,6 +1523,7 @@ async function abertura(){
 }
 
 /* início */
+function cap3Ok(){try{return !!localStorage.getItem('pecados_c3')||!!localStorage.getItem('pecados_teste')||/teste/.test(location.search)}catch(e){return false}}
 function cap2Ok(){try{return !!localStorage.getItem('pecados_c2')||!!localStorage.getItem('pecados_teste')||/teste/.test(location.search)}catch(e){return false}}
 document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('#capa .t1');if(!t)return;window._tq=(window._tq||0)+1;clearTimeout(window._tqT);window._tqT=setTimeout(()=>window._tq=0,1500);
   if(window._tq>=5){window._tq=0;try{localStorage.setItem('pecados_teste','1')}catch(e){}const m=document.querySelector('#capa .menu');if(m&&!m.querySelector('[data-k="c2"]')){toast('MODO TESTE: CAPÍTULO 2 LIBERADO');closeOv();inicio()}}},true);
@@ -1269,13 +1536,13 @@ async function inicio(first){
   SFX.amb('musica');
   const sv=carregar();
   const k=await overlay(`<div id="capa"><img class="cbg" src="${IMG('capa')}"><canvas class="rain2" width="1324" height="687"></canvas><div class="flash"></div>
-    <div class="tit"><div class="t1">OS PECADOS</div><div class="t2">DA <span>FORCA</span></div><div class="knots"><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg></div><div class="sub">São Paulo · 1994<br>${sv&&sv.cap===2&&!sv.flags.fim?'Capítulo 2: O Subterrâneo':'Capítulo 1: A Corda que Não Arrebenta'}</div></div>
-    <div class="menu">${sv&&!sv.flags.fim?'<div class="btn" data-k="c">CONTINUAR</div>':''}<div class="btn" data-k="n">NOVO JOGO</div>${cap2Ok()?'<div class="btn" data-k="c2">CAPÍTULO 2</div>':''}<div style="display:flex;gap:8px"><div class="btn small" data-k="a" style="min-width:156px;font-size:11px">VER ABERTURA</div><div class="btn small" data-k="h" style="min-width:156px;font-size:11px">COMO JOGAR</div></div></div>
+    <div class="tit"><div class="t1">OS PECADOS</div><div class="t2">DA <span>FORCA</span></div><div class="knots"><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg></div><div class="sub">São Paulo · 1994<br>${sv&&sv.cap===3&&!sv.flags.fim?'Capítulo 3: A Última Corda':sv&&sv.cap===2&&!sv.flags.fim?'Capítulo 2: O Subterrâneo':'Capítulo 1: A Corda que Não Arrebenta'}</div></div>
+    <div class="menu">${sv&&!sv.flags.fim?'<div class="btn" data-k="c">CONTINUAR</div>':''}<div class="btn" data-k="n">NOVO JOGO</div>${cap2Ok()?'<div class="btn" data-k="c2">CAPÍTULO 2</div>':''}${cap3Ok()?'<div class="btn" data-k="c3">CAPÍTULO 3</div>':''}<div style="display:flex;gap:8px"><div class="btn small" data-k="a" style="min-width:156px;font-size:11px">VER ABERTURA</div><div class="btn small" data-k="h" style="min-width:156px;font-size:11px">COMO JOGAR</div></div></div>
     <div class="hint">Melhor com som e com o celular deitado</div></div>`,null);
   if(k==='a'){closeOv();await abertura();return inicio()}
   if(k==='h'){closeOv();await ajuda();return inicio()}
   SFX.init();closeOv();
-  if(k==='c'){S=sv;S._keepG=1;}else if(k==='c2'){let c=null;try{c=JSON.parse(localStorage.getItem('pecados_c2')||'null')}catch(e){}S=novo2(c);}else{S=novo();}
+  if(k==='c'){S=sv;S._keepG=1;}else if(k==='c3'){let c=null;try{c=JSON.parse(localStorage.getItem('pecados_c3')||'null')}catch(e){}S=novo3(c);}else if(k==='c2'){let c=null;try{c=JSON.parse(localStorage.getItem('pecados_c2')||'null')}catch(e){}S=novo2(c);}else{S=novo();}
   const f=$('#fade');f.style.opacity=1;
   await fadeTo(S.scene);
 }
