@@ -1014,8 +1014,8 @@ async function chegaMiguel(){S.flags.miguel=1;renderSprites();const m=sprEl('mig
   await say('miguel','E o Seu Ayrton, do bar do motoclube, falou que todo ano tem coisa estranha lá. Ele quer falar com você.');await G('Então vamos para o bar. Você vai de bicicleta na frente.');await liberar('bar','Bar do Motoclube')}
 
 /* 4. Bar do Motoclube */
-SC.bar={img:'bar',amb:'jukebox|chuva-dentro',f:'none',base:684,gh:400,range:[200,780],start:640,follow:'tiana',follow2:'nori',
-  sprites:()=>[{id:'ayrton',img:'ay0',x:470,y:660,h:385,anim:'ayrton'},{id:'beth',img:'be0',x:720,y:670,h:365,anim:'beth',flip:1},{id:'miguel',img:'mg0',x:880,y:680,h:345,anim:'miguel',flip:1}],
+SC.bar={img:'bar',amb:'jukebox|chuva-dentro',f:'none',base:684,gh:400,range:[200,720],start:630,follow:'tiana',follow2:'nori',
+  sprites:()=>[{id:'ayrton',img:'ay0',x:470,y:660,h:385,anim:'ayrton'},{id:'beth',img:'be0',x:800,y:672,h:370,anim:'beth',flip:1},{id:'miguel',img:'mg0',x:945,y:684,h:345,anim:'miguel',flip:1}],
   hots:[
     {l:'Jukebox',r:[30,260,90,160],x:220,olhar:'Uma jukebox de 1970. Tocando rock baixinho.',usar:async()=>{SFX.fx('jukebox',.5);await narr('Ponho uma ficha. Um rock antigo enche o bar. A Beth sorri.')}},
     {l:'Moto',r:[495,330,200,90],x:600,olhar:'Uma moto antiga, polida como joia. O xodó do Ayrton.',usar:'Nem pensar. O Ayrton me mata.'},
@@ -1047,8 +1047,8 @@ async function esperarMeiaNoite(){if(!S.pistas.includes(8))return G('Ainda não.
   await narr('Subo para o quarto da Beth. O Miguel cola o rosto na janela. As horas se arrastam.');await fadeTo('largo3')}
 
 /* 5. Capela dos Aflitos por dentro */
-SC.capela3={img:'capela3',amb:'capela|chuva-dentro',f:'brightness(.62) contrast(1.05)',base:684,gh:390,range:[330,820],start:700,follow:'tiana',
-  sprites:()=>[{id:'marlene',img:'ml0',x:760,y:640,h:350,anim:'marlene',flip:1}],
+SC.capela3={img:'capela3',amb:'capela|chuva-dentro',f:'brightness(.62) contrast(1.05)',base:684,gh:390,range:[330,760],start:640,follow:'tiana',
+  sprites:()=>[{id:'marlene',img:'ml0',x:860,y:668,h:360,anim:'marlene',flip:1}],
   hots:[
     {l:'Parede de bilhetes',r:[0,60,320,450],x:340,olhar:async()=>bilhetes(),pegar:async()=>bilhetes()},
     {l:'Velas',r:[20,450,340,237],x:380,olhar:'Centenas de velas. Cada uma é um pedido.'},
