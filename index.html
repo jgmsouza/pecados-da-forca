@@ -129,7 +129,7 @@ body{font-family:'VT323',monospace;color:var(--ink)}
 #capa .t2 span{color:#b3201b;text-shadow:4px 4px 0 #000,0 0 26px rgba(220,30,30,.7)}
 #capa .knots{display:flex;justify-content:center;gap:18px;margin:16px 0 6px}
 #capa .sub{font-family:'VT323';font-size:26px;color:#9aa6b4;letter-spacing:1px}
-#capa .menu{position:absolute;left:1120px;top:440px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px}
+#capa .menu{position:absolute;left:1120px;bottom:24px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px}
 #capa .menu .btn{min-width:320px;font-size:16px;background:linear-gradient(#3a2626,#211414);border-color:#7d4b4b #2a1010 #2a1010 #7d4b4b;color:#e8d8b8}
 #capa .menu .btn:hover{color:#ffd27a}
 #capa .hint{position:absolute;right:20px;top:8px;font-family:VT323;font-size:20px;color:#6c7682}
@@ -1253,7 +1253,7 @@ async function inicio(first){
   const sv=carregar();
   const k=await overlay(`<div id="capa"><img class="cbg" src="${IMG('capa')}"><canvas class="rain2" width="1324" height="687"></canvas><div class="flash"></div>
     <div class="tit"><div class="t1">OS PECADOS</div><div class="t2">DA <span>FORCA</span></div><div class="knots"><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg><svg width='34' height='40' viewBox='0 0 17 20' shape-rendering='crispEdges'><path d='M8 0v4M5 4h6v2h2v4h-2v2H5v-2H3V6h2zM6 7h4v2H6zM8 12v8' stroke='#8a6a3c' stroke-width='2' fill='none'/></svg></div><div class="sub">São Paulo · 1994<br>${sv&&sv.cap===2&&!sv.flags.fim?'Capítulo 2: O Subterrâneo':'Capítulo 1: A Corda que Não Arrebenta'}</div></div>
-    <div class="menu">${sv&&!sv.flags.fim?'<div class="btn" data-k="c">CONTINUAR</div>':''}<div class="btn" data-k="n">NOVO JOGO</div>${cap2Ok()?'<div class="btn" data-k="c2">CAPÍTULO 2</div>':''}<div class="btn small" data-k="a" style="min-width:200px;font-size:11px">VER ABERTURA</div><div class="btn small" data-k="h" style="min-width:200px;font-size:11px">COMO JOGAR</div></div>
+    <div class="menu">${sv&&!sv.flags.fim?'<div class="btn" data-k="c">CONTINUAR</div>':''}<div class="btn" data-k="n">NOVO JOGO</div>${cap2Ok()?'<div class="btn" data-k="c2">CAPÍTULO 2</div>':''}<div style="display:flex;gap:8px"><div class="btn small" data-k="a" style="min-width:156px;font-size:11px">VER ABERTURA</div><div class="btn small" data-k="h" style="min-width:156px;font-size:11px">COMO JOGAR</div></div></div>
     <div class="hint">Melhor com som e com o celular deitado</div></div>`,null);
   if(k==='a'){closeOv();await abertura();return inicio()}
   if(k==='h'){closeOv();await ajuda();return inicio()}
