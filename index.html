@@ -282,7 +282,7 @@ const PISTAS=13;const NP=()=>S&&S.cap>=2?12:13;const PLC=()=>S&&S.cap===3?PL3:S&
 const LOCS={delegacia3:'Delegacia',minhocao:'Debaixo do Minhocão',terreiro:'Terreiro da Renata',bar:'Bar do Motoclube',capela3:'Capela dos Aflitos',largo3:'Largo da Forca',sebo2:'Sebo Medeiros',mosteiro:'Mosteiro de São Bento',cemiterio:'Cemitério da Consolação',se:'Praça da Sé',sebo:'Sebo Medeiros',capelafora:'Capela dos Aflitos',delegacia:'1º DP',redacao:'IML',casafora:'Praia Grande'};
 
 let S=null; // estado
-function novo3(c){c=c||{};return{cap:3,scene:c.seguir?'minhocao':'delegacia3',gx:null,flags:{policia:c.policia,prender:c.prender,seguir:c.seguir,nathVem:c.nathVem},inv:['isqueiro','lanterna'],vida:10,san:10,cr:6000,pistas:[],cp:null,rel:c.rel||{}}}
+function novo3(c){c=c||{};return{cap:3,scene:'delegacia3',gx:null,flags:{policia:c.policia,prender:c.prender,seguir:c.seguir,nathVem:c.nathVem,minhocao:c.seguir?1:0},inv:['isqueiro','lanterna'],vida:10,san:10,cr:6000,pistas:[],cp:null,rel:c.rel||{}}}
 function novo2(c){c=c||{};return{cap:2,scene:'sebo2',gx:null,flags:{policia:c.policia},inv:['isqueiro'],vida:10,san:10,cr:8000,pistas:[],cp:null,rel:c.rel||{}}}
 function novo(){return{scene:'abertura',gx:null,flags:{},inv:[],vida:10,san:10,cr:10000,pistas:[],cp:null,rel:{}}}
 function rel(who,n){S.rel=S.rel||{};S.rel[who]=(S.rel[who]||0)+n;toast(n>0?(PERS[who]||who).toUpperCase()+' GOSTOU DISSO':(PERS[who]||who).toUpperCase()+' NÃO GOSTOU',1600)}
@@ -481,13 +481,13 @@ SC.capeladentro={amb:'capela',img:'capoeira',f:'none',base:665,gh:360,range:[220
 async function comprarVela(){if(has('vela')||has('velaacesa'))return G('Uma vela basta. Espero.');if(S.cr<500||(S.rel&&S.rel.sarah>0)){if(S.cr<500)await G('Não tenho nem CR$ 500...');await say('sarah','Leva, Guilherme. O Chaguinhas não cobra de quem está aflito.');give('vela');return}S.cr-=500;drawHud();await narr('Deixo CR$ 500 na lata e pego uma vela.');give('vela')}
 async function sarahBilhete(){if(S.flags.bilhete)return say('sarah','Já te dei o que era seu.');
   await narr('A mestra Sarah lê o recado da nota fiscal e para de sorrir.');
-  await say('sarah','Minha avó foi zeladora da capela a vida inteira. Quando ela partiu, eu fiquei com os bilhetes de pedido.');
+  await say('sarah','A Dona Marlene, zeladora da capela, me pediu pra guardar aqui os bilhetes de pedido mais antigos.');
   await say('sarah','Esse homem esteve aqui semana passada. Pediu pra ver os bilhetes velhos. Não gostei da malícia dele.');
   const r=await escolha(['Me ajuda, mestra. Acho que o próximo sou eu.','Me dá o bilhete. É assunto de polícia.']);
   if(r===0){rel('sarah',1);await G('Me ajuda, mestra. Acho que o próximo sou eu.');await say('sarah','Na roda a gente aprende a ler o outro. Você não tá mentindo.')}
   else{rel('sarah',-1);await G('Me dá o bilhete. É assunto de polícia.');await say('sarah','Polícia? Você nem distintivo tem. ...Toma. Mas fica me devendo.')}
   await narr('Ela abre a caixa de madeira e tira um papel amarelado, dobrado em quatro.');
-  await say('sarah','Esse aí a minha avó nunca deixou jogar fora. Tem o seu sobrenome.');
+  await say('sarah','Esse aí a Dona Marlene nunca deixou jogar fora. Tem o seu sobrenome.');
   S.flags.bilhete=1;give('bilhete');
   await pista(4,'"O último Medeiros paga a corda. 20/9". O bilhete é antigo.');
   await G('Vinte de setembro... o dia em que enforcaram o Chaguinhas.');
@@ -608,7 +608,7 @@ SC.sala={amb:'casa-vo',img:'sala',sf:'brightness(.72) saturate(.85)',base:665,gh
     falar:async()=>{if(S.san<10&&!S.flags.rezou&&!S.flags.recusouReza)return rezar();if(S.flags.bauAberto)return say('izabel','Seu avô carregou isso sozinho a vida inteira. Agora é com você, meu neto.');
       await say('izabel','O cadeado tem quatro números. Seu avô dizia que a senha era "a data que condena os Medeiros".');
       if(S.flags.recorte)await say('izabel','O dia em que levaram o Antônio... e o dia em que enforcaram aquele moço, o Chaguinhas.');
-      else await say('izabel','Tem coisa no jornal daquela época. Sua amiga fotógrafa pode achar.')},
+      else await say('izabel','Tem coisa no jornal daquela época. Olha o recorte que a Helena te deu.')},
     usar:async it=>{if(it==='bilhete')return say('izabel','É a letra do seu avô, sim. Vinte do nove... sempre essa data.');if(it==='recorte')return say('izabel','O Antônio... irmão do seu avô. Eu era mocinha. Vinte de setembro.');return say('izabel','Guarda isso, meu filho.')}}},
   async enter(){if(!S.flags.vo){S.flags.vo=1;await say('izabel','Guilherme! Entra, meu filho, tá encharcado.');await say('izabel','O baú do seu avô está ali no canto. A Tiana late pra ele desde que ele morreu.');await G('Vó... o que tem nesse baú?');await say('izabel','A verdade sobre o nosso sobrenome. E eu nunca tive coragem de abrir.');await rezar()}}
 };
@@ -897,7 +897,7 @@ async function soltarPedro(){SFX.fx('isqueiro');await narr('Queimo a corda com o
   else{await narr('Ele avança com um castiçal de ferro.');SFX.fx('briga',.9);await hurt(2,'O castiçal acerta suas costelas.');await narr('Sem luz, a luta é no escuro. Agarro o capuz.')}
   await hold('encap','en5',0);SFX.sting();await narr('O capuz cai.');await scare(1,'Você conhece esse rosto.');
   S.flags.revelou=1;renderSprites();await G('Barros?!');await say('barros','Devia ter ficado longe dos túneis, Medeiros. Como mandei.');await pista(12,'o líder encapuzado é o investigador Luiz Inácio Barros, braço direito da Joana.');
-  await say('barros','Minha família guarda essa corda desde 1821. Meu pai tirou da Cúria em 54. E no dia vinte, o último Medeiros paga.');
+  await say('barros','Minha família jurou essa corda em 1821. Meu pai a tirou da Cúria em 54. E no dia vinte, o último Medeiros paga.');
   if(S.flags.policia){S.flags.joanaChegou=1;renderSprites();await say('joana','Polícia! Ninguém se mexe!');await say('joana','Barros...? Não. Não pode ser você.')}
   const r=await escolha(S.flags.policia?['Prender o Barros: "Algema ele, Joana!"','Deixar ele fugir e seguir o rastro até o resto da seita.']:['Prender o Barros: partir pra cima dele.','Deixar ele fugir e seguir o rastro até o resto da seita.']);
   if(r===0){S.flags.prender=1;if(S.flags.policia){await say('joana','Mãos na cabeça, Barros!');SFX.fx('fogo',.9);await narr('O Barros chuta as velas. O círculo pega fogo e a fumaça toma o porão.');await say('barros','Vinte de setembro, Joana. Pergunta pro seu pai o que ele sabe.')}
@@ -942,20 +942,20 @@ SC.delegacia3={amb:'delegacia',img:'delegacia',f:'brightness(.8) saturate(.9)',b
       falar:async()=>{if(S.pistas.includes(2))return say('eduardo','Debaixo do Minhocão, doutor. Eu levo o senhor lá. É o mínimo.');
         await say('eduardo','Doutor Guilherme... eu tenho que contar uma coisa. Faz quarenta anos que eu não durmo direito.');await hold('eduardo','ed6');
         await say('eduardo','Setembro de 54. Eu era moço, primeiro ano de táxi. Uns homens de capuz me pagaram para levar um embrulho até a Consolação.');
-        await say('eduardo','O embrulho se mexia, doutor. Era um homem. O Antônio Medeiros. Seu avô.');sprEl('eduardo')._hold=null;
+        await say('eduardo','O embrulho se mexia, doutor. Era um homem. O Antônio Medeiros. O irmão do seu avô.');sprEl('eduardo')._hold=null;
         await pista(1,'em 1954, o Seu Eduardo levou os encapuzados de táxi, sem saber o que era.');
-        const r=await escolha(['Perdoar: "O senhor era um menino. A culpa é deles, não sua."','Cobrar: "Quarenta anos calado? Meu avô morreu por isso!"']);
+        const r=await escolha(['Perdoar: "O senhor era um menino. A culpa é deles, não sua."','Cobrar: "Quarenta anos calado? O irmão do meu avô morreu por isso!"']);
         if(r===0){S.flags.perdoou=1;rel('eduardo',1);rel('andre',1);await G('O senhor era um menino. A culpa é deles, não sua.');await hold('eduardo','ed5',1400);await say('eduardo','...Deus lhe pague, doutor.')}
-        else{rel('eduardo',-1);await G('Quarenta anos calado? Meu avô morreu por isso!');await say('andre','Ei. Ele é meu pai, Medeiros. Ele está tentando consertar.')}
+        else{rel('eduardo',-1);await G('Quarenta anos calado? O irmão do meu avô morreu por isso!');await say('andre','Ei. Ele é meu pai, Medeiros. Ele está tentando consertar.')}
         await say('eduardo','Depois do serviço, eles mandaram eu deixar o carro debaixo de onde hoje é o Minhocão. Eles ainda se encontram lá. Eu vejo o carro preto passando.');
         await pista(2,'o esconderijo da Irmandade fica debaixo do Minhocão.');await liberar('minhocao','Esconderijo debaixo do Minhocão')}},
     joana:{l:'Delegada Joana',olhar:'A delegada Joana. Não dormiu. O distintivo parece pesar no peito dela.',
-      falar:async()=>{if(!S.flags.joa3){S.flags.joa3=1;await say('joana','Vinte anos eu confiei no Barros. Vinte anos.');await say('joana','Ele disse para eu perguntar ao meu pai. Eu perguntei. E o meu pai chamou o meu avô.')}
+      falar:async()=>{if(!S.flags.joa3){S.flags.joa3=1;await say('joana','O Barros tem vinte anos de polícia. Eu confiava nele como confio no meu pai.');await say('joana','Ele disse para eu perguntar ao meu pai. Eu perguntei. E o meu pai chamou o meu avô.')}
         else await say('joana',S.flags.policia||S.flags.perdoou?'Se precisar da gente amanhã à noite, é só chamar. Eu e meu pai vamos.':'Faça o que tiver que fazer, Guilherme. Eu não posso sair daqui sem ordem.')}},
     andre:{l:'André',olhar:'André, escrivão. Pela primeira vez sem café na mão.',falar:async()=>say('andre','Meu pai carregou isso a vida inteira. Escuta ele até o fim, Medeiros.')}
   },
   async enter(){if(!S.flags.ini3){S.flags.ini3=1;await narr('São Paulo, madrugada de 19 de setembro de 1994. Falta um dia para o vinte.');await narr('O Barros sumiu com a corda. A delegada Joana chamou o Guilherme na delegacia.');
-    if(S.flags.seguir)await narr('O Nori seguiu o rastro do Barros até debaixo do Minhocão. Mas antes, a Joana quer falar com você.');await say('joana','Guilherme. Meu avô tem uma coisa para te contar.')}}
+    if(S.flags.seguir)await narr('Na fuga, o Nori seguiu o rastro do Barros até debaixo do Minhocão. Mas antes, a Joana quer falar com você.');await say('joana','Guilherme. Meu avô tem uma coisa para te contar.')}}
 };
 
 /* 2. Esconderijo debaixo do Minhocão */
@@ -1086,7 +1086,7 @@ SC.largo3={img:'largo3',amb:'vento|chuva',rua:1,showRain:1,trovao:1,f:'none',bas
   hots:[{l:'Cruz',r:[390,40,250,440],olhar:'A cruz do Largo, com a forca pendurada. Foi aqui que tudo começou.'},{l:'Carro preto',r:[690,320,320,120],olhar:'O carro preto da Irmandade.'},{l:'Capela',r:[0,60,330,340],olhar:'A capela. Lá dentro, a Dona Marlene espera a meia-noite.'}],
   npc:{
     barros:{l:'Barros',olhar:()=>narr(S.flags.cordaTomada?'O Barros, de joelhos no chão molhado.':'O Barros, no meio do círculo, com a corda nas mãos.'),
-      falar:async()=>say('barros',S.flags.cordaTomada?'Isso não acaba comigo, Medeiros...':'Venha, Medeiros. Seu avô também veio andando.'),
+      falar:async()=>say('barros',S.flags.cordaTomada?'Isso não acaba comigo, Medeiros...':'Venha, Medeiros. O Antônio também veio andando.'),
       pegar:async()=>tomarCorda(),usar:async()=>tomarCorda()},
     encap:{l:'Encapuzado',olhar:'Um dos sete encapuzados.',falar:async()=>narr('Ele só continua cantando.')},
     encap2:{l:'Encapuzado',olhar:'Outro encapuzado.',falar:async()=>narr('Ele só continua cantando.')},
@@ -1117,7 +1117,7 @@ async function climax(){const f=S.flags;let al=0;
   if(ally('theo')&&ally('chico')){await chega('theo','O Theo e o Velho Chico chegam pela rua da capela, com velas acesas, rezando.');S.san=Math.min(10,S.san+3);drawHud();toast('SANIDADE +3',1600);al++}
   f.al=al;salvar();await narr(`Aliados ao seu lado: ${al}.`);await G('Agora é comigo. A corda.');toast('PEGUE A CORDA DO BARROS',3000)}
 async function tomarCorda(){const f=S.flags;if(f.cordaTomada)return narr('A corda já está comigo.');
-  await narr('Avanço para dentro do círculo de velas.');await hold('barros','bc2',0);await say('barros','Ela é minha! É da minha família há cento e setenta anos!');
+  await narr('Avanço para dentro do círculo de velas.');await hold('barros','bc2',0);await say('barros','Ela é minha! Minha família espera por ela há cento e setenta anos!');
   SFX.fx('briga',.9);await narr('Agarro a corda. O Barros puxa de um lado, eu puxo do outro.');if((f.al||0)<4)await hurt(1,'A corda queima as mãos.');
   f.cordaTomada=1;renderSprites();give('corda');await pista(10,'a corda original está com o Guilherme.');await narr('O Barros escorrega nas pedras e cai de joelhos.');
   await sleep(400);const t=sprEl('tiana');if(t){t._hold='tm1';t.src=IMG('tm1')}SFX.bark();await sleep(300);SFX.bark();await narr('A Tiana late para o alto da cruz, com o pelo todo eriçado. Ela viu primeiro.');await pista(9,'a Tiana viu o espírito do Chaguinhas.');
@@ -1157,7 +1157,7 @@ async function epilogo(){const f=S.flags,T=f.fimTipo;S.flags.fim=1;salvar();SFX.
   for(const [bg,t] of linhas){await overlay(`<div style="max-width:900px;margin:auto;font-size:30px;line-height:1.3;background:rgba(0,0,0,.6);padding:24px 30px">${t}</div><div class="btn small" data-k="x" style="margin-top:22px;min-width:180px">CONTINUAR</div>`,bg)}
   await creditos();try{localStorage.setItem('pecados_fim','1');localStorage.removeItem('pecados_v1')}catch(e){}closeOv();inicio()}
 async function creditos(){const el=[['Guilherme Medeiros','o último Medeiros'],['Nathalia Salustiano','sócia do sebo'],['Pedro Onishi','o estagiário'],['Joana Medeiros','a delegada'],['André Campo Piano','o escrivão'],['Eduardo Campo Piano','o taxista'],['Sarah Souza','a capoeirista'],['Helena Souza','a legista'],['Vó Maria Izabel','a guardiã do baú'],['Vô José Marcelino','o retrato do baú'],['Theo','o monge'],['Francisco, o Velho Chico','o coveiro'],['Renata','a mãe de santo'],['Dona Marlene','a zeladora'],['Ayrton','o motoclube'],['Beth','a dona do bar'],['Miguel','o mensageiro'],['Nori e Tiana','como eles mesmos']];
-  let h='<div style="background:rgba(0,0,0,.72);padding:16px 30px;width:1150px;margin:auto"><div class="title" style="font-size:34px">OS PECADOS DA FORCA</div><p style="font-size:26px">Escrito por José Guilherme</p><p style="font-size:24px;color:#d9c48a">Estrelando a nossa família</p><div style="font-size:21px;line-height:1.3;columns:2;column-gap:40px;margin:10px auto;text-align:left">';
+  let h='<div style="background:rgba(0,0,0,.72);padding:16px 30px;width:1150px;margin:auto"><div class="title" style="font-size:34px">OS PECADOS DA FORCA</div><p style="font-size:24px">Uma história de José Guilherme de Medeiros Souza</p><p style="font-size:24px;color:#d9c48a">Estrelando a nossa família</p><div style="font-size:21px;line-height:1.3;columns:2;column-gap:40px;margin:10px auto;text-align:left">';
   el.forEach(([a,b])=>h+=`<div>${a} <i style="color:#9aa6b4">— ${b}</i></div>`);
   h+='</div><p style="font-size:22px;color:#9aa6b4">Em memória do Vô José Marcelino e de Francisco José das Chagas, o Chaguinhas (1821).</p><div class="btn" data-k="x" style="display:inline-block;min-width:260px">FIM</div></div>';
   await overlay(h,'capa')}
