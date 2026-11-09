@@ -888,10 +888,13 @@ async function soltarPedro(){SFX.fx('isqueiro');await narr('Queimo a corda com o
   await say('pedro','Chefe... ele falou do Largo da Forca. Do dia vinte. Ele quer você lá.');await G('Então ele vai me ter lá. Mas do meu jeito.');await fimCap2()}
 async function fimCap2(){S.flags.fim=1;salvar();SFX.bell();SFX.amb('musica');
   const carry={policia:S.flags.policia,prender:S.flags.prender,seguir:S.flags.seguir,rel:S.rel};try{localStorage.setItem('pecados_c3',JSON.stringify(carry));localStorage.removeItem('pecados_v1')}catch(e){}
-  await overlay(`<div class="title">FIM DO<br>CAPÍTULO 2</div><div class="sub">O Subterrâneo</div>
-    <p>Pistas: ${S.pistas.length}/${NP()} · Vida: ${S.vida}/10 · Sanidade: ${S.san}/10</p>
-    <p style="font-size:28px;color:#d9c48a">Capítulo 3: A Noite da Forca — em breve</p>
-    <div class="btn" data-k="n">VOLTAR AO INÍCIO</div>`,'capa2');
+  $('#ovbg').style.opacity=1;$('#ov').style.justifyContent='flex-start';
+  await overlay(`<div style="width:1324px;margin-left:calc(50% - 662px);padding:18px 0 26px;background:linear-gradient(rgba(0,0,0,.85),rgba(0,0,0,.55) 70%,transparent)">
+    <div class="title" style="font-size:40px">FIM DO CAPÍTULO 2</div><div class="sub" style="margin:4px 0">O Subterrâneo</div>
+    <p style="margin:6px auto;font-size:24px">Pistas: ${S.pistas.length}/${NP()} · Vida: ${S.vida}/10 · Sanidade: ${S.san}/10</p>
+    <p style="margin:4px auto 12px;font-size:24px;color:#d9c48a">Capítulo 3: A Última Corda — em breve</p>
+    <div class="btn" data-k="n" style="display:inline-block;min-width:300px">VOLTAR AO INÍCIO</div></div>`,'fim2');
+  $('#ovbg').style.opacity='';$('#ov').style.justifyContent='';
   closeOv();inicio()}
 
 /* ---------------- MOTOR ---------------- */
