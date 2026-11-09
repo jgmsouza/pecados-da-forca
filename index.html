@@ -502,18 +502,19 @@ SC.casafora={amb:'praia',rua:1,img:'casafora',base:680,gh:300,range:[150,950],st
   ],
   async enter(){if(!S.flags.praia){S.flags.praia=1;await narr('Uma hora de estrada no Opala do Seu Valdir. Praia Grande, debaixo de tempestade.');await G('A casa da vó. Faz anos que eu não venho aqui.')}}
 };
-SC.sala={amb:'casa-vo',img:'sala',base:687,gh:400,range:[230,680],start:320,follow:'tiana',trovao:1,raio:'sala_raio',
-  sprites:()=>[{id:'izabel',img:'ir0',x:560,y:635,h:330,anim:'izabel'}],
-  exits:[{l:'Sair',r:[0,560,140,127],to:'casafora'}],
+SC.sala={amb:'casa-vo',img:'sala',base:662,gh:350,range:[160,760],start:260,follow:'tiana',trovao:1,
+  sprites:()=>[{id:'izabel',img:'ir0',x:560,y:640,h:320,anim:'izabel'}],
+  exits:[{l:'Sair',r:[0,380,70,300],to:'casafora'}],
   hots:[
-    {l:'Retratos da família',r:[5,55,245,185],x:250,olhar:async()=>{await narr('Os Medeiros. O vô José Marcelino, a vó Maria Izabel jovem... e um homem que ninguém sabe dizer quem é.');await narr('Atrás do retrato do vô, a letra dele a lápis: "20-09. Nunca esquecer."');S.flags.dica2009=1}},
-    {l:'Relógio',r:[255,120,50,130],olhar:'Parado nas 3h. Desde 1954, diz a vó.'},
-    {l:'Abajur',r:[365,255,65,125],olhar:'A única luz quente da casa.'},
-    {l:'Sofá',r:[0,300,470,300],x:300,olhar:'Sofá com capa de plástico. Clássico de vó.',usar:'Sentar agora? Com esse baú me encarando?'},
-    {l:'Janela',r:[460,85,330,295],x:560,olhar:'Mar revolto e relâmpagos. A Tiana não tira o olho.'},
-    {l:'Santa',r:[835,80,105,165],x:680,olhar:'Nossa Senhora Aparecida, com uma vela acesa. A vó reza pra ela toda noite.',usar:async()=>{if(S.flags.rezou||S.san>=10)return narr('Você faz o sinal da cruz.');return rezar()},falar:async()=>{if(S.flags.rezou||S.san>=10)return narr('Você faz o sinal da cruz.');return rezar()}},
-    {l:'Televisão',r:[940,265,84,295],x:680,olhar:'Fora do ar. Só chiado.'},
-    {l:'Baú',r:[700,370,190,175],x:670,olhar:'Baú de madeira com cintas de ferro. Um cadeado de 4 números.',any:async()=>abrirBau()}
+    {l:'Retratos da família',r:[170,130,120,153],x:260,olhar:async()=>{await narr('Os Medeiros. O vô José Marcelino, a vó Maria Izabel jovem... e um homem que ninguém sabe dizer quem é.');await narr('Atrás do retrato do vô, a letra dele a lápis: \"20-09. Nunca esquecer.\"');S.flags.dica2009=1}},
+    {l:'Relógio',r:[79,93,71,137],x:200,olhar:'Parado nas 3h. Desde 1954, diz a vó.'},
+    {l:'Abajur',r:[72,263,81,130],x:200,olhar:'A única luz quente da casa.'},
+    {l:'Sofá',r:[140,320,267,190],x:300,olhar:'Sofá com paninhos de crochê. Clássico de vó.',usar:'Sentar agora? Com esse baú me encarando?'},
+    {l:'Janela',r:[620,130,307,190],x:700,olhar:'Mar revolto e relâmpagos. A Tiana não tira o olho.'},
+    {l:'Santa',r:[310,150,107,127],x:360,olhar:'Nossa Senhora Aparecida, com uma vela acesa. A vó reza pra ela toda noite.',usar:async()=>{if(S.flags.rezou||S.san>=10)return narr('Você faz o sinal da cruz.');return rezar()},falar:async()=>{if(S.flags.rezou||S.san>=10)return narr('Você faz o sinal da cruz.');return rezar()}},
+    {l:'Televisão',r:[467,180,110,140],x:520,olhar:'Fora do ar. Só chiado.'},
+    {l:'Estante',r:[445,320,145,130],x:520,olhar:'Livros velhos do vô e um porta-retrato dele novinho, de terno.'},
+    {l:'Baú',r:[777,360,210,133],x:760,olhar:'Baú de madeira com cintas de ferro. Um cadeado de 4 números.',any:async()=>abrirBau()}
   ],
   npc:{izabel:{l:'Vó Maria Izabel',olhar:'Vó Maria Izabel. O terço não sai da mão dela.',
     falar:async()=>{if(S.san<10&&!S.flags.rezou)return rezar();if(S.flags.bauAberto)return say('izabel','Seu avô carregou isso sozinho a vida inteira. Agora é com você, meu neto.');
