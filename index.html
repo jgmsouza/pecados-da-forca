@@ -794,16 +794,20 @@ async function noriBueiro(){if(has('chave')||S.flags.bueiroAberto)return narr('O
   await narr('Mostro o petisco e aponto a boca de lobo. O Nori entende na hora.');
   const nx=f2?f2.style.left:'500px',ntop=f2?f2.style.top:'600px';
   if(f2){f2.classList.add('walking');f2.style.transform='translateX(-50%) scaleX(-1)';f2.style.transition='left 1.2s linear, top 1.2s linear, opacity .25s';f2.style.left='250px';f2.style.top=(parseFloat(ntop)-48)+'px';await sleep(1250)}
-  // entrando: metade de trás aparecendo e afundando no buraco
-  const wE=document.createElement('div');wE.style.cssText='position:absolute;left:183px;top:500px;width:110px;height:122px;overflow:hidden;pointer-events:none';
-  const iE=new Image();iE.src=IMG('nbE');iE.style.cssText='position:absolute;left:0;top:30px;width:105px;image-rendering:pixelated;transition:transform 1.3s ease-in';wE.appendChild(iE);sp.appendChild(wE);
-  if(f2)f2.style.opacity=0;SFX.bark();await sleep(700);iE.style.transform='translateY(95px)';await sleep(1400);wE.remove();
+  // entrando: metade de trás afundando no buraco (tamanho proporcional ao Nori)
+  const NW=f2?f2.offsetWidth:110,NH=f2?f2.offsetHeight:62,gx0=245,gy0=622;
+  const eW=Math.round(NW*0.78),eH=Math.round(eW*459/555);
+  const wE=document.createElement('div');wE.style.cssText=`position:absolute;left:${gx0-eW*0.6}px;top:${gy0-eH*0.92}px;width:${eW+4}px;height:${eH*0.92}px;overflow:hidden;pointer-events:none`;
+  const iE=new Image();iE.src=IMG('nbE');iE.style.cssText=`position:absolute;left:0;top:0;width:${eW}px;image-rendering:pixelated;transition:transform 1.3s ease-in`;wE.appendChild(iE);sp.appendChild(wE);
+  if(f2)f2.style.opacity=0;SFX.bark();await sleep(700);iE.style.transform=`translateY(${eH}px)`;await sleep(1400);wE.remove();
   await narr('Ele se espreme pela boca de lobo e some lá embaixo.');await sleep(900);SFX.bark();await sleep(900);SFX.bark();await narr('Latidos abafados. Água. Silêncio...');
-  // saindo com a chave
-  const wK=document.createElement('div');wK.style.cssText='position:absolute;left:186px;top:527px;width:130px;height:100px;overflow:hidden;pointer-events:none;transition:left 1.4s linear, top 1.4s linear';
-  const iK=new Image();iK.src=IMG('nbK');iK.style.cssText='position:absolute;left:0;top:0;width:125px;image-rendering:pixelated;transform:translateY(100px);transition:transform 1.1s ease-out';wK.appendChild(iK);sp.appendChild(wK);
-  await sleep(50);iK.style.transform='translateY(0)';await sleep(1300);wK.style.overflow='visible';await sleep(400);
-  wK.style.left=(parseFloat(nx)-62)+'px';wK.style.top=(parseFloat(ntop)+(f2?f2.offsetHeight:60)-100)+'px';await sleep(1500);
+  // saindo com a chave, mesmo tamanho do Nori normal
+  const kW=Math.round(NW*1.05),kH=Math.round(kW*547/699);
+  const wK=document.createElement('div');wK.style.cssText=`position:absolute;left:${gx0-kW/2}px;top:${gy0-kH}px;width:${kW+4}px;height:${kH}px;overflow:hidden;pointer-events:none;transition:left 1.6s linear, top 1.6s linear`;
+  const iK=new Image();iK.src=IMG('nbK');iK.style.cssText=`position:absolute;left:0;top:0;width:${kW}px;image-rendering:pixelated;transform:translateY(${kH}px);transition:transform 1.1s ease-out`;wK.appendChild(iK);sp.appendChild(wK);
+  await sleep(50);iK.style.transform='translateY(0)';await sleep(1300);wK.style.overflow='visible';await sleep(300);
+  iK.style.transition='none';iK.animate([{transform:'translateY(0)'},{transform:'translateY(-4px)'},{transform:'translateY(0)'}],{duration:260,iterations:6});
+  wK.style.left=(parseFloat(nx)-kW/2)+'px';wK.style.top=(parseFloat(ntop)+NH-kH)+'px';await sleep(1650);
   await narr('O Nori volta encharcado, rabo abanando, com uma chave enferrujada na boca.');wK.remove();
   if(f2){f2.style.transition='';f2.style.left=nx;f2.style.top=ntop;f2.style.transform='translateX(-50%)';f2.style.opacity=1;f2.classList.remove('walking')}
   give('chave');await pista(8,'a chave da grade do bueiro, trazida pelo Nori.');await G('Bom garoto. Esse petisco foi o melhor investimento da minha vida.')}
